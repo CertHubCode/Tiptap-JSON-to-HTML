@@ -1,0 +1,10 @@
+<label class="task-item" style="display: flex;">
+  <input type="checkbox" {% if node.attrs.checked %}checked{% endif %} disabled>
+  <span class="task-item-label">
+    {%- for content in node.content -%}
+      {%- with template=content.type + '.html', node=content -%}
+        {%- include template -%}
+      {%- endwith -%}
+    {%- endfor -%}
+  </span>
+</label>

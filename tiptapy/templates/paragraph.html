@@ -1,9 +1,13 @@
 {%- if node.content -%}
-  <p{{ extract_tag_attrs(node) }}>
+  {%- if node.attrs and node.attrs.textAlign -%}
+    <p{{ extract_tag_attrs(node) }} style="text-align: {{node.attrs.textAlign}}">
+  {%- else -%}
+    <p{{ extract_tag_attrs(node) }}>
+  {%- endif -%}
   {%- for item in node.content -%}
     {%- with template=item.type + '.html', node=item -%}
-        {%- include template -%}
-          {%- endwith -%}
-  	{%- endfor -%}
+      {%- include template -%}
+    {%- endwith -%}
+  {%- endfor -%}
   </p>
 {%- endif -%}

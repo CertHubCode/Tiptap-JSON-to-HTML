@@ -5,6 +5,26 @@ import pytest
 
 import tiptapy
 
+# paragraph ✅
+# text
+# table ✅
+# mention
+# dynamicTable ✅
+# bulletList ✅
+# codeBlock ✅
+# hardBreak ✅
+# listItem ✅
+# orderedList ✅
+# blockquote ✅
+# heading ✅
+# horizontalRule
+# image ✅
+# taskList
+# taskItem
+# dynamic-text-content
+# staticContent
+# date
+
 tags_to_test = (
     "simple",
     "blockquote",
@@ -45,6 +65,10 @@ tags_to_test = (
     "camel-case",
     "data_attributes",
     "xss",
+    "dynamic_table",
+    "table",
+    "date",
+    "dynamic_text_content",
 )
 
 
@@ -89,10 +113,11 @@ def test_html_tag(tag):
     """
     tag_data = json_data[tag]
     tag_data_copy = deepcopy(tag_data)
-    expected_html = html_data[tag].strip()
 
+    expected_html = html_data[tag].strip()
+    print(expected_html)
     renderer = tiptapy.BaseDoc(config)
     rendered_html = renderer.render(tag_data).strip()
-
+    print(rendered_html)
     assert rendered_html == expected_html
     assert tag_data == tag_data_copy  # Test pass by value
