@@ -1,1089 +1,164 @@
 import tiptapy
 
 s = """
-
 {
   "type": "doc",
   "content": [
     {
-      "type": "paragraph",
+      "type": "dynamicTable",
       "attrs": {
-        "textAlign": "left"
-      },
-      "content": [
-        {
-          "type": "text",
-          "marks": [
-            {
-              "type": "bold"
-            }
-          ],
-          "text": "Bold "
-        },
-        {
-          "type": "hardBreak"
-        },
-        {
-          "type": "text",
-          "marks": [
-            {
-              "type": "strike"
-            }
-          ],
-          "text": "Strike"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "attrs": {
-        "textAlign": "left"
-      },
-      "content": [
-        {
-          "type": "text",
-          "marks": [
-            {
-              "type": "underline"
-            }
-          ],
-          "text": "Underline"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "attrs": {
-        "textAlign": "left"
-      },
-      "content": [
-        {
-          "type": "text",
-          "marks": [
-            {
-              "type": "italic"
-            }
-          ],
-          "text": "Italic"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "attrs": {
-        "textAlign": "left"
-      },
-      "content": [
-        {
-          "type": "text",
-          "marks": [
-            {
-              "type": "highlight",
-              "attrs": {
-                "color": "#ffd699"
-              }
-            }
-          ],
-          "text": "Highlight"
-        },
-        {
-          "type": "hardBreak"
-        }
-      ]
-    },
-    {
-      "type": "orderedList",
-      "attrs": {
-        "start": 1
-      },
-      "content": [
-        {
-          "type": "listItem",
-          "content": [
-            {
-              "type": "paragraph",
-              "attrs": {
-                "textAlign": "left"
-              },
-              "content": [
-                {
-                  "type": "text",
-                  "text": "one"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "listItem",
-          "content": [
-            {
-              "type": "paragraph",
-              "attrs": {
-                "textAlign": "left"
-              },
-              "content": [
-                {
-                  "type": "text",
-                  "text": "two"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "listItem",
-          "content": [
-            {
-              "type": "paragraph",
-              "attrs": {
-                "textAlign": "left"
-              },
-              "content": [
-                {
-                  "type": "text",
-                  "text": "three"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "attrs": {
-        "textAlign": "left"
-      }
-    },
-    {
-      "type": "bulletList",
-      "content": [
-        {
-          "type": "listItem",
-          "content": [
-            {
-              "type": "paragraph",
-              "attrs": {
-                "textAlign": "left"
-              },
-              "content": [
-                {
-                  "type": "text",
-                  "text": "one"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "listItem",
-          "content": [
-            {
-              "type": "paragraph",
-              "attrs": {
-                "textAlign": "left"
-              },
-              "content": [
-                {
-                  "type": "text",
-                  "text": "two"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "listItem",
-          "content": [
-            {
-              "type": "paragraph",
-              "attrs": {
-                "textAlign": "left"
-              },
-              "content": [
-                {
-                  "type": "text",
-                  "text": "three"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "attrs": {
-        "textAlign": "left"
-      }
-    },
-    {
-      "type": "taskList",
-      "content": [
-        {
-          "type": "taskItem",
-          "attrs": {
-            "checked": true
+        "path": [
+          "root",
+          "qms",
+          "form",
+          "records"
+        ],
+        "displayPath": [
+          "Root",
+          "QMS",
+          "Form",
+          "Records"
+        ],
+        "type": "list",
+        "columns": {
+          "Name": {
+            "originalName": "Name",
+            "alias": null,
+            "visible": true,
+            "order": 0,
+            "width": null
           },
-          "content": [
-            {
-              "type": "paragraph",
-              "attrs": {
-                "textAlign": "left"
-              },
-              "content": [
-                {
-                  "type": "text",
-                  "text": "hello"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "taskItem",
-          "attrs": {
-            "checked": false
+          "Mode of Payment": {
+            "originalName": "Mode of Payment",
+            "alias": "Payment",
+            "visible": true,
+            "order": 1,
+            "width": null
           },
-          "content": [
-            {
-              "type": "paragraph",
-              "attrs": {
-                "textAlign": "left"
-              },
-              "content": [
-                {
-                  "type": "text",
-                  "text": "hi"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "attrs": {
-        "textAlign": "left"
-      }
-    },
-    {
-      "type": "paragraph",
-      "attrs": {
-        "textAlign": "right"
-      },
-      "content": [
-        {
-          "type": "text",
-          "text": "Last updated on "
-        },
-        {
-          "type": "date",
-          "attrs": {
-            "path": [
-              "root",
-              "qms",
-              "sop",
-              "last_updated_at"
-            ],
-            "displayPath": [
-              "Root",
-              "QMS",
-              "SOP",
-              "Last Updated At"
-            ],
-            "type": "date",
-            "format": "YYYY-MM-DD",
-            "content": "2024-11-12",
-            "lastUpdated": 1731668527558
+          "Email": {
+            "originalName": "Email",
+            "alias": null,
+            "visible": true,
+            "order": 2,
+            "width": null
+          },
+          "Company": {
+            "originalName": "Company",
+            "alias": null,
+            "visible": true,
+            "order": 3,
+            "width": null
+          },
+          "Date of contact": {
+            "originalName": "Date of contact",
+            "alias": null,
+            "visible": true,
+            "order": 4,
+            "width": null
+          },
+          "Deal Status": {
+            "originalName": "Deal Status",
+            "alias": null,
+            "visible": true,
+            "order": 5,
+            "width": 58
+          },
+          "Agreement": {
+            "originalName": "Agreement",
+            "alias": null,
+            "visible": false,
+            "order": 6,
+            "width": null
           }
         },
-        {
-          "type": "text",
-          "text": " by "
-        },
-        {
-          "type": "dynamic-text-content",
-          "attrs": {
-            "path": [
-              "root",
-              "qms",
-              "sop",
-              "last_updated_by"
+        "content": {
+          "headers": [
+            "Name",
+            "Email",
+            "Company",
+            "Date of contact",
+            "Deal Status",
+            "Mode of Payment",
+            "Agreement"
+          ],
+          "rows": [
+            [
+              "Life Meditech",
+              "l@gmail.com",
+              "Life Meditech Pvt Ltd",
+              "2024-11-05",
+              "In progress",
+              "Cash",
+              "true"
             ],
-            "displayPath": [
-              "Root",
-              "QMS",
-              "SOP",
-              "Last Updated By"
+            [
+              "Genios",
+              "genios@email.io",
+              "Genio Inc. Corp",
+              "2024-11-22",
+              "Complete",
+              "Bank Transfer",
+              "false"
             ],
-            "type": "plain",
-            "content": "Saud Chougle",
-            "lastUpdated": 1731668527559
-          }
+            [
+              "Smart MediTech Device Manufacturer",
+              "smart@gmail.com",
+              "Smart MediTech Device Manufacturer GmbH",
+              "2024-11-29",
+              "On hold",
+              "Bitcoin",
+              "false"
+            ],
+            [
+              "microsoft",
+              "microsoft@gmail.com",
+              "microsoft",
+              "2024-11-06",
+              "In progress",
+              "Cash",
+              "true"
+            ],
+            [
+              "google",
+              "google@gmail.com",
+              "google",
+              "2024-11-20",
+              "Complete",
+              "Bank Transfer",
+              "true"
+            ],
+            [
+              "MTech",
+              "mtech@yahoo.com",
+              "Mtech",
+              "2024-11-04",
+              "In progress",
+              "Cash",
+              "true"
+            ],
+            [
+              "CertHub",
+              "certhub@certhub.de",
+              "certhub",
+              "2024-11-05",
+              "In progress",
+              "Bank Transfer",
+              "true"
+            ]
+          ]
         },
+        "lastUpdated": 1731671604789
+      }
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "textAlign": "left"
+      },
+      "content": [
         {
           "type": "text",
           "text": " "
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "attrs": {
-        "textAlign": "left",
-        "level": 1
-      },
-      "content": [
-        {
-          "type": "dynamic-text-content",
-          "attrs": {
-            "path": [
-              "root",
-              "qms",
-              "sop",
-              "name"
-            ],
-            "displayPath": [
-              "Root",
-              "QMS",
-              "SOP",
-              "Name"
-            ],
-            "type": "plain",
-            "content": "Process 1",
-            "lastUpdated": 1731668508787
-          }
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "attrs": {
-        "textAlign": "left"
-      },
-      "content": [
-        {
-          "type": "text",
-          "marks": [
-            {
-              "type": "underline"
-            }
-          ],
-          "text": "Abbreviation:"
-        },
-        {
-          "type": "text",
-          "text": " "
-        },
-        {
-          "type": "dynamic-text-content",
-          "attrs": {
-            "path": [
-              "root",
-              "qms",
-              "sop",
-              "abbreviation"
-            ],
-            "displayPath": [
-              "Root",
-              "QMS",
-              "SOP",
-              "Abbreviation"
-            ],
-            "type": "plain",
-            "content": "p1",
-            "lastUpdated": 1731668508788
-          }
-        }
-      ]
-    },
-    {
-      "type": "table",
-      "content": [
-        {
-          "type": "tableRow",
-          "content": [
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "tableHeader",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  },
-                  "content": [
-                    {
-                      "type": "text",
-                      "text": "Name"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "tableHeader",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  },
-                  "content": [
-                    {
-                      "type": "text",
-                      "text": "Date & Signature"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "tableRow",
-          "content": [
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  },
-                  "content": [
-                    {
-                      "type": "text",
-                      "marks": [
-                        {
-                          "type": "bold"
-                        }
-                      ],
-                      "text": "Author"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  },
-                  "content": [
-                    {
-                      "type": "dynamic-text-content",
-                      "attrs": {
-                        "path": [
-                          "root",
-                          "qms",
-                          "sop",
-                          "author"
-                        ],
-                        "displayPath": [
-                          "Root",
-                          "QMS",
-                          "SOP",
-                          "Author"
-                        ],
-                        "type": "plain",
-                        "content": "Saud Chougle",
-                        "lastUpdated": 1731668508785
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "text": "  "
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "tableRow",
-          "content": [
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  },
-                  "content": [
-                    {
-                      "type": "text",
-                      "marks": [
-                        {
-                          "type": "bold"
-                        }
-                      ],
-                      "text": "Process Owner"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  },
-                  "content": [
-                    {
-                      "type": "dynamic-text-content",
-                      "attrs": {
-                        "path": [
-                          "root",
-                          "qms",
-                          "sop",
-                          "owner"
-                        ],
-                        "displayPath": [
-                          "Root",
-                          "QMS",
-                          "SOP",
-                          "Owner"
-                        ],
-                        "type": "plain",
-                        "content": "Nicolas Gehring",
-                        "lastUpdated": 1731668508787
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "text": "  "
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "tableRow",
-          "content": [
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  },
-                  "content": [
-                    {
-                      "type": "text",
-                      "marks": [
-                        {
-                          "type": "bold"
-                        }
-                      ],
-                      "text": "Reviewer"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  },
-                  "content": [
-                    {
-                      "type": "dynamic-text-content",
-                      "attrs": {
-                        "path": [
-                          "root",
-                          "qms",
-                          "sop",
-                          "reviewers"
-                        ],
-                        "displayPath": [
-                          "Root",
-                          "QMS",
-                          "SOP",
-                          "Reviewers"
-                        ],
-                        "type": "plain",
-                        "content": "Leon Kobinger, Julia Sommer, ClinicalEvaluator",
-                        "lastUpdated": 1731668508787
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "text": "  "
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "tableRow",
-          "content": [
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  },
-                  "content": [
-                    {
-                      "type": "text",
-                      "marks": [
-                        {
-                          "type": "bold"
-                        }
-                      ],
-                      "text": "Formal Reviewer"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  },
-                  "content": [
-                    {
-                      "type": "dynamic-text-content",
-                      "attrs": {
-                        "path": [
-                          "root",
-                          "qms",
-                          "sop",
-                          "formal_reviewer"
-                        ],
-                        "displayPath": [
-                          "Root",
-                          "QMS",
-                          "SOP",
-                          "Formal Reviewer"
-                        ],
-                        "type": "plain",
-                        "content": "Jonas Bayer",
-                        "lastUpdated": 1731668508786
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "text": "  "
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "tableRow",
-          "content": [
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 3,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  },
-                  "content": [
-                    {
-                      "type": "text",
-                      "text": "*) Signatures not necessary for draft version"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "tableRow",
-          "content": [
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  },
-                  "content": [
-                    {
-                      "type": "text",
-                      "marks": [
-                        {
-                          "type": "bold"
-                        }
-                      ],
-                      "text": "Version"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 2,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  },
-                  "content": [
-                    {
-                      "type": "dynamic-text-content",
-                      "attrs": {
-                        "path": [
-                          "root",
-                          "qms",
-                          "sop",
-                          "version"
-                        ],
-                        "displayPath": [
-                          "Root",
-                          "QMS",
-                          "SOP",
-                          "Version"
-                        ],
-                        "type": "plain",
-                        "content": "1.0",
-                        "lastUpdated": 1731668508787
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "text": "  "
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "tableRow",
-          "content": [
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "tableCell",
-              "attrs": {
-                "colspan": 1,
-                "rowspan": 1,
-                "colwidth": null
-              },
-              "content": [
-                {
-                  "type": "paragraph",
-                  "attrs": {
-                    "textAlign": "left"
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "attrs": {
-        "textAlign": "left",
-        "level": 2
-      },
-      "content": [
-        {
-          "type": "text",
-          "text": "Goal"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "attrs": {
-        "textAlign": "left"
-      },
-      "content": [
-        {
-          "type": "dynamic-text-content",
-          "attrs": {
-            "path": [
-              "root",
-              "qms",
-              "sop",
-              "goal"
-            ],
-            "displayPath": [
-              "Root",
-              "QMS",
-              "SOP",
-              "Goal"
-            ],
-            "type": "plain",
-            "content": "Process Goal",
-            "lastUpdated": 1731668508787
-          }
-        },
-        {
-          "type": "text",
-          "text": "  "
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "attrs": {
-        "textAlign": "left",
-        "level": 2
-      },
-      "content": [
-        {
-          "type": "text",
-          "text": "Scope"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "attrs": {
-        "textAlign": "left"
-      },
-      "content": [
-        {
-          "type": "dynamic-text-content",
-          "attrs": {
-            "path": [
-              "root",
-              "qms",
-              "sop",
-              "scope"
-            ],
-            "displayPath": [
-              "Root",
-              "QMS",
-              "SOP",
-              "Scope"
-            ],
-            "type": "plain",
-            "content": "Process Scope",
-            "lastUpdated": 1731668508788
-          }
-        },
-        {
-          "type": "text",
-          "text": "  "
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "attrs": {
-        "textAlign": "left",
-        "level": 2
-      },
-      "content": [
-        {
-          "type": "text",
-          "text": "Background Information"
         }
       ]
     },
