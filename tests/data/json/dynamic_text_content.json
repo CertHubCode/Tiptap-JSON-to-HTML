@@ -1,0 +1,25 @@
+{
+    "type": "doc",
+    "content": [
+          {
+            "type": "dynamic-text-content",
+            "attrs": {
+              "path": [
+                "root",
+                "qms",
+                "form",
+                "name"
+              ],
+              "displayPath": [
+                "Root",
+                "QMS",
+                "Form",
+                "Name"
+              ],
+              "type": "plain",
+              "content": "Provider Details",
+              "lastUpdated": 1731667025136
+            }
+          }
+        ]
+  }

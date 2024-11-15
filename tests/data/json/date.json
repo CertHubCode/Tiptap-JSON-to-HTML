@@ -1,0 +1,26 @@
+{
+    "type": "doc",
+    "content": [
+          {
+            "type": "date",
+            "attrs": {
+              "path": [
+                "root",
+                "qms",
+                "form",
+                "created_at"
+              ],
+              "displayPath": [
+                "Root",
+                "QMS",
+                "Form",
+                "Created At"
+              ],
+              "type": "date",
+              "format": "YYYY-MM-DD",
+              "content": "2024-10-08",
+              "lastUpdated": 1731666747477
+            }
+          }
+    ]
+}
