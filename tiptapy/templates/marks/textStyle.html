@@ -1,0 +1,21 @@
+{%- if mark.attrs -%}
+{%- set style = '' %}
+{%- if mark.attrs.color -%}
+{%- set style = style + 'color: ' + mark.attrs.color + '; ' %}
+{%- endif -%}
+{%- if mark.attrs.fontFamily -%}
+{%- set style = style + 'font-family: ' + mark.attrs.fontFamily + '; ' %}
+{%- endif -%}
+{%- if mark.attrs.fontSize -%}
+{%- set style = style + 'font-size: ' + mark.attrs.fontSize + '; ' %}
+{%- endif -%}
+{%- if style -%}
+<span style=" {{ style }} ">
+    {{ text }}
+</span>
+{%- else -%}
+{{ text }}
+{%- endif -%}
+{%- else -%}
+{{ text }}
+{%- endif -%}
