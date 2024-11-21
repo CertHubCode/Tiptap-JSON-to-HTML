@@ -1,0 +1,10 @@
+{% set ns = namespace(text=node.content) %}
+{%- for mark in node.marks -%}
+{%- set ns.content -%}
+{%- with template='marks/' + mark.type + '.html', text=ns.content, mark=mark -%}
+{%- include template -%}
+{%- endwith -%}
+{%- endset -%}
+{%- endfor -%}
+
+{{ ns.content }}

@@ -2,5 +2,5 @@
 mark in node.marks if node.marks -%} {%- set ns.content -%} {%- with template='marks/' + mark.type + '.html',
 text=ns.content, mark=mark -%} {%- include template -%} {%- endwith -%} {%- endset -%} {%- endfor -%}
 
-<span> {{ns.text | safe }}
+<span> {{ns.content }}
 </span>
