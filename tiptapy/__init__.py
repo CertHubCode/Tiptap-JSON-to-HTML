@@ -3,6 +3,7 @@ import os
 import sys
 from html import escape
 from typing import Dict
+import re
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -36,6 +37,12 @@ def init_env(path, config):
     return env
 
 
+def is_html(string):
+    html_tag_pattern = re.compile(
+        r"<\s*[a-zA-Z]+[^>]*>")  # Look for valid HTML tags
+    return bool(html_tag_pattern.search(string))
+
+
 def _get_abs_template_path(path_str):
     # This is equivalent of pkgutil.get_data
     # But when diris passed to pkgutil.get_data it throws IsDirectoryError
@@ -50,7 +57,6 @@ def escape_values_recursive(node):
     # and should not be escaped. Users should clean the html before
     # passing it to the renderer.
     skip_key = "html"
-
     if isinstance(node, dict):
         return {
             escape(k): v if k == skip_key else escape_values_recursive(v)
@@ -59,7 +65,7 @@ def escape_values_recursive(node):
     elif isinstance(node, list):
         return [escape_values_recursive(x) for x in node]
     elif isinstance(node, str):
-        return escape(node)
+        return node if is_html(node) else escape(node)
     return node
 
 
