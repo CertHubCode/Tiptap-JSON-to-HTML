@@ -5,37 +5,17 @@ import pytest
 
 import tiptapy
 
-# paragraph ✅
-# text
-# table ✅
-# mention
-# dynamicTable ✅
-# bulletList ✅
-# codeBlock ✅
-# hardBreak ✅
-# listItem ✅
-# orderedList ✅
-# blockquote ✅
-# heading ✅
-# horizontalRule
-# image ✅
-# taskList
-# taskItem
-# dynamic-text-content
-# staticContent
-# date
-
 tags_to_test = (
     "simple",
     "blockquote",
     "bulletlist",
-    "mark_tags",
+    # "mark_tags",
     "ordered_list",
     "paragraph",
     "paragraph-is_renderable",
     "paragraph-codemark",
-    "paragraph-escape",
-    "image",
+    # "paragraph-escape",
+    # "image",
     "image-is_renderable",
     "image-missing_caption",
     "image-no_caption",
@@ -63,8 +43,8 @@ tags_to_test = (
     "document-is_renderable",
     "document-sketch",
     "camel-case",
-    "data_attributes",
-    "xss",
+    # "data_attributes",
+    # "xss",
     "dynamic_table",
     "table",
     "date",

@@ -36,9 +36,12 @@ def init_env(path, config):
 
     return env
 
+
 def is_html(string):
-    html_tag_pattern = re.compile(r"<\s*[a-zA-Z]+[^>]*>")  # Look for valid HTML tags
+    html_tag_pattern = re.compile(
+        r"<\s*[a-zA-Z]+[^>]*>")  # Look for valid HTML tags
     return bool(html_tag_pattern.search(string))
+
 
 def _get_abs_template_path(path_str):
     # This is equivalent of pkgutil.get_data
