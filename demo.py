@@ -1,7 +1,53 @@
 import tiptapy
 
 s = """
-{"type":"doc","content":[{"type":"dynamicTable","attrs":{"path":["root","qms","sop","linked_forms_details"],"displayPath":["Root","QMS","SOP","Linked Forms Details"],"type":"list","columns":{"Id":{"originalName":"Id","alias":null,"visible":true,"order":0,"width":null},"Name":{"originalName":"Name","alias":null,"visible":true,"order":1,"width":null},"Abbreviation":{"originalName":"Abbreviation","alias":null,"visible":true,"order":2,"width":null},"Version":{"originalName":"Version","alias":null,"visible":true,"order":3,"width":null},"State":{"originalName":"State","alias":null,"visible":true,"order":4,"width":null},"Description":{"originalName":"Description","alias":null,"visible":true,"order":5,"width":null},"Author":{"originalName":"Author","alias":null,"visible":true,"order":6,"width":null},"Owner":{"originalName":"Owner","alias":null,"visible":true,"order":7,"width":null},"Formal Reviewer":{"originalName":"Formal Reviewer","alias":null,"visible":true,"order":8,"width":null},"Reviewers":{"originalName":"Reviewers","alias":null,"visible":true,"order":9,"width":null},"Created At":{"originalName":"Created At","alias":null,"visible":true,"order":10,"width":null},"Created By":{"originalName":"Created By","alias":null,"visible":true,"order":11,"width":null},"Last Updated At":{"originalName":"Last Updated At","alias":null,"visible":true,"order":12,"width":null}},"content":{"headers":["Id","Name","Abbreviation","Version","State","Description","Author","Owner","Formal Reviewer","Reviewers","Created At","Created By","Last Updated At"],"rows":[["17","Complain Information","CIGll","1.0","DRAFT","<h2>What is Lorem Ipsum?</h2><p><strong>Lorem Ipsum</strong> is simply <a target=\\"_blank\\" rel=\\"noopener noreferrer nofollow\\" href=\\"google.com\\">dummy</a> text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><h2>Why do we use it?</h2><p>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).</p><p><br></p><h2>Where does it come from?</h2><p>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of \\"de Finibus Bonorum et Malorum\\" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, \\"Lorem ipsum dolor sit amet..\\", comes from a line in section 1.10.32.</p>","Nicolas Gehring","Julia Sommer","Julia Sommer","Saud Chougle, Nicolas Gehring","2024-07-08","User Not Found","2024-11-12"],["22","Complaint Form","FORM_CP_803","1.0","DRAFT","","User Not Found","User Not Found","User Not Found","","2024-09-16","User Not Found","2024-09-16"],["28","Device Description - Patient Population","FORM_DD_PP","1.0","DRAFT","","User Not Found","User Not Found","User Not Found","","2024-09-16","User Not Found","2024-09-16"],["23","Record Feedback","FORM_FB_803","1.0","DRAFT","","User Not Found","User Not Found","User Not Found","","2024-09-16","User Not Found","2024-09-16"]]},"lastUpdated":1732271282890}},{"type":"paragraph","attrs":{"textAlign":"left"},"content":[{"type":"text","text":" "}]}]}
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "checklist",
+      "attrs": {
+        "path": [
+          "root",
+          "product",
+          "A",
+          "Single Record multi values fields",
+          "checklist_bk3z5"
+        ],
+        "displayPath": [
+          "Root",
+          "Product",
+          "A",
+          "Single Record multi values fields",
+          "Multiple Checkboxs"
+        ],
+        "content": [
+          {
+            "label": "EU",
+            "value": "EU",
+            "checked": true
+          },
+          {
+            "label": "AUS",
+            "value": "AUS",
+            "checked": true
+          },
+          {
+            "label": "CAN",
+            "value": "CAN",
+            "checked": true
+          },
+          {
+            "label": "US",
+            "value": "US",
+            "checked": true
+          }
+        ],
+        "type": "checklist"
+      }
+    }
+  ]
+}
 """
 
 
