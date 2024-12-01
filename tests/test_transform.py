@@ -49,6 +49,7 @@ tags_to_test = (
     "table",
     "date",
     "dynamic_text_content",
+    "checklist",
 )
 
 
