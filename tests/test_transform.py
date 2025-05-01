@@ -50,8 +50,13 @@ tags_to_test = (
     "date",
     "dynamic_text_content",
     "checklist",
+    "textField",
+    "checkbox",
+    "numberField",
+    "dateField",
+    "selectField",
+    "radioField",
 )
-
 
 class config:
     """

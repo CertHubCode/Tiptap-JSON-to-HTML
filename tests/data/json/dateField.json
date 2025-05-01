@@ -1,0 +1,16 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "dateField",
+      "attrs": {
+        "fieldType": "dateField",
+        "fieldId": "dateField-xygyITT1bo",
+        "fieldName": "Date Field",
+        "fieldValue": "2025-04-09",
+        "format": "MM/dd/yyyy",
+        "lastUpdated": 1745938318351
+      }
+    }
+  ]
+}

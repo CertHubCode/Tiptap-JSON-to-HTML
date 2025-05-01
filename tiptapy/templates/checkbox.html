@@ -1,1 +1,1 @@
-<input class="checkbox" type="checkbox" {% if node.attrs.checked %}checked{% endif %} disabled>
+<label><input type="checkbox" {% if node.attrs.fieldValue %}checked{% endif %} disabled><span style="margin-left: 5px;">{{ node.attrs.fieldName }}</span></label>

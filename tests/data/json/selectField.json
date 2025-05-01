@@ -1,0 +1,26 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "selectField",
+      "attrs": {
+        "fieldType": "selectField",
+        "fieldId": "selectField-YA9_H2nzFh",
+        "fieldName": "Select Field",
+        "fieldValue": "option1",
+        "options": [
+          {
+            "value": "option1",
+            "label": "Option 1"
+          },
+          {
+            "value": "option2",
+            "label": "Option 2"
+          }
+        ],
+        "defaultValue": "",
+        "lastUpdated": 1745938417412
+      }
+    }
+  ]
+}
