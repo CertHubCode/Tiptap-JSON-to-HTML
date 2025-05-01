@@ -1,0 +1,15 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "checkbox",
+      "attrs": {
+        "fieldType": "checkbox",
+        "fieldId": "checkbox-ZJj4X0EK-s",
+        "fieldName": "Checkbox",
+        "fieldValue": true,
+        "lastUpdated": 1745938082785
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "textField",
+      "attrs": {
+        "fieldType": "textField",
+        "fieldId": "textField-PqokMOdJwl",
+        "fieldName": "Text Field",
+        "fieldValue": "text field value",
+        "fieldWidth": "120",
+        "fieldHeight": "20",
+        "placeholder": "Enter text...",
+        "lastUpdated": 1745937915541
+      }
+    }
+  ]
+}

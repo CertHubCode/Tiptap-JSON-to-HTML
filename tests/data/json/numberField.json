@@ -1,0 +1,18 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "numberField",
+      "attrs": {
+        "fieldType": "numberField",
+        "fieldId": "numberField-OmsXrKVVgl",
+        "fieldName": "Number Field",
+        "fieldValue": "123",
+        "fieldWidth": "120",
+        "fieldHeight": "20",
+        "placeholder": "Enter number",
+        "lastUpdated": null
+      }
+    }
+  ]
+}
