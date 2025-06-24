@@ -1,1 +1,5 @@
-<span class="textField">{{ node.attrs.fieldValue }}</span>
+<span class="textField"
+    style="border: 1px solid #160047;height: {{node.attrs.fieldHeight}}px;width: {{node.attrs.fieldWidth}}px;text-align: left;display: inline-block;line-height: 1;">{%-if
+    node.attrs.fieldValue == "" -%}{{ node.attrs.placeholder }}{%- else
+    -%}{{node.attrs.fieldValue }}{%- endif -%}</span>
+<p>{{node.attrs.fieldValue}} {{node.attrs.placeholder}}</p>
