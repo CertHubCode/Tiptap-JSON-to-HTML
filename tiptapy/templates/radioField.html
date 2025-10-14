@@ -1,1 +1,12 @@
-<span class="radioField">{{ node.attrs.fieldValue }}</span>
+<span class="radioField-header">{{ node.attrs.fieldName }}</span>
+<div class="radioField" style="display: flex; flex-direction: row; gap: 8px; align-items: center;">
+    {% for option in node.attrs.options %}
+    <div class="radioField-option" style="display: flex; flex-direction: row; align-items: center;gap: 16px;">
+        <input class="radioField-option-input" type="radio" {%if node.attrs.fieldValue %} {% if
+            option.value==node.attrs.fieldValue %}checked{% endif %} {% else %} {% if
+            option.value==node.attrs.defaultValue %}checked{% endif %} {% endif %} style="margin-right: 16px;" />
+        <label class="radioField-option-label" style="white-space: nowrap; margin-right: 32px;">{{
+            option.label }}</label>
+    </div>
+    {% endfor %}
+</div>
