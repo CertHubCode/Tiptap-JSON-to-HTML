@@ -4,7 +4,7 @@
         {%- for cell in row.content -%}
         {%- if cell.type == 'tableHeader' -%}
         <th {% if cell.attrs.colwidth and cell.attrs.colwidth|length> 0 %}style="width: {{ cell.attrs.colwidth[0]
-            }}px;"{% endif %}
+            }}px;"{% else %}style="width: max-content;"{% endif %}
             {% if cell.attrs.colspan and cell.attrs.colspan > 1 %}colspan="{{ cell.attrs.colspan }}"{% endif %}>
             {%- for content in cell.content -%}
             {%- with template=content.type + '.html', node=content -%}
