@@ -1,0 +1,14 @@
+# .github/workflows/hotfix-sync.yml
+name: Hotfix – Open PR to Dev
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  sync-to-dev:
+    uses: MY-ORG/.github/.github/workflows/hotfix-sync.yml@main
+    secrets: inherit
