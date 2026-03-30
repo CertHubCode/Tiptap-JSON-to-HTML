@@ -1,0 +1,10 @@
+# .github/workflows/release.yml
+name: Release – Reset Main to Dev
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    uses: MY-ORG/.github/.github/workflows/release.yml@main
+    secrets: inherit
