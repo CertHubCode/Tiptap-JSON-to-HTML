@@ -6,7 +6,8 @@
     {%- set _ = visible_columns.append((header, props)) -%}
     {%- endif -%}
     {%- endfor -%}
-    {%- elif node.attrs.content and node.attrs.content.headers -%}
+    {%- elif node.attrs.content and node.attrs.content.headers and node.attrs.content.rows and
+    node.attrs.content.rows|length > 0 -%}
     {%- for header in node.attrs.content.headers -%}
     {%- set _ = visible_columns.append((header, {"originalName": header, "alias": None, "visible": True, "order":
     loop.index0, "width": None})) -%}
