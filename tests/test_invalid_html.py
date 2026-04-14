@@ -68,6 +68,38 @@ class TestInvalidHTML:
 
         print("✅ Basic HTML handling works correctly")
 
+    def test_dynamic_table_does_not_render_header_fallback_without_rows(self):
+        """Headers should not render when there is no row data to display."""
+        data = {
+            "type": "doc",
+            "content": [
+                {
+                    "type": "dynamicTable",
+                    "attrs": {
+                        "columns": {},
+                        "content": {
+                            "headers": ["Created At"],
+                            "rows": [],
+                        },
+                        "gridState": {
+                            "columns": {
+                                "columnVisibilityModel": {
+                                    "Created At": False,
+                                },
+                                "orderedFields": ["Created At"],
+                            }
+                        },
+                    },
+                }
+            ],
+        }
+
+        rendered_html = self.doc.render(data)
+
+        assert rendered_html.strip() == "No content found", "Empty tables should render only plain text"
+        assert "<table" not in rendered_html, "Empty tables should not render any table markup"
+        assert "Created At" not in rendered_html, "Hidden empty columns should not leak into output"
+
     def test_dynamic_table_security(self):
         """Test security features - dangerous content should be escaped."""
         data = {
