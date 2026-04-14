@@ -96,7 +96,8 @@ class TestInvalidHTML:
 
         rendered_html = self.doc.render(data)
 
-        assert "<th" not in rendered_html, "Header fallback should not render without rows"
+        assert rendered_html.strip() == "No content found", "Empty tables should render only plain text"
+        assert "<table" not in rendered_html, "Empty tables should not render any table markup"
         assert "Created At" not in rendered_html, "Hidden empty columns should not leak into output"
 
     def test_dynamic_table_security(self):
