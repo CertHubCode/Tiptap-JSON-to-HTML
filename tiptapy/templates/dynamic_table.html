@@ -14,8 +14,8 @@
     <thead>
         <tr>
             {%- for header, props in visible_columns|sort(attribute='1.order') -%}
-            {% set header_text = props.alias if props.alias else props.originalName|default(header) %}
-            {% set ns = namespace(text=header_text) %}
+            {%- set header_text = props.alias if props.alias else props.originalName|default(header) -%}
+            {%- set ns = namespace(text=header_text) -%}
             {%- for mark in node.marks if node.marks -%}
             {%- set ns.text -%}
             {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
@@ -32,10 +32,10 @@
         <tr>
             {%- for header, props in visible_columns|sort(attribute='1.order') -%}
             {%- if header in node.attrs.content.headers -%}
-            {% set cell_index = node.attrs.content.headers.index(header) %}
-            {% set ns = namespace(text=row[cell_index]) %}
+            {%- set cell_index = node.attrs.content.headers.index(header) -%}
+            {%- set ns = namespace(text=row[cell_index]) -%}
             {%- else -%}
-            {% set ns = namespace(text='') %}
+            {%- set ns = namespace(text='') -%}
             {%- endif -%}
             {%- for mark in node.marks if node.marks -%}
             {%- set ns.text -%}
