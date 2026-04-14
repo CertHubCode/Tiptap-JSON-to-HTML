@@ -1,14 +1,20 @@
 <table>
     {%- set visible_columns = [] -%}
+    {%- if node.attrs.columns and node.attrs.columns|length > 0 -%}
     {%- for header, props in node.attrs.columns.items() -%}
     {%- if props.visible -%}
     {%- set _ = visible_columns.append((header, props)) -%}
     {%- endif -%}
     {%- endfor -%}
+    {%- elif node.attrs.content and node.attrs.content.headers -%}
+    {%- for header in node.attrs.content.headers -%}
+    {%- set _ = visible_columns.append((header, {"originalName": header, "alias": None, "visible": True, "order": loop.index0, "width": None})) -%}
+    {%- endfor -%}
+    {%- endif -%}
     <thead>
         <tr>
             {%- for header, props in visible_columns|sort(attribute='1.order') -%}
-            {% set header_text = props.alias if props.alias else props.originalName %}
+            {% set header_text = props.alias if props.alias else props.originalName|default(header) %}
             {% set ns = namespace(text=header_text) %}
             {%- for mark in node.marks if node.marks -%}
             {%- set ns.text -%}
