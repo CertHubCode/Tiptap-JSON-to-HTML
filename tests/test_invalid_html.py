@@ -100,6 +100,44 @@ class TestInvalidHTML:
         assert "<table" not in rendered_html, "Empty tables should not render any table markup"
         assert "Created At" not in rendered_html, "Hidden empty columns should not leak into output"
 
+    def test_dynamic_table_hides_false_fallback_columns(self):
+        """Fallback headers should honor gridState column visibility for all hidden columns."""
+        data = {
+            "type": "doc",
+            "content": [
+                {
+                    "type": "dynamicTable",
+                    "attrs": {
+                        "columns": {},
+                        "content": {
+                            "headers": ["Source", "Created At", "Description"],
+                            "rows": [
+                                ["Vigilance - Trend Reports", "2026-04-22T13:21:57.087000", "Yaaahoooooo"],
+                            ],
+                        },
+                        "gridState": {
+                            "columns": {
+                                "columnVisibilityModel": {
+                                    "Created At": False,
+                                    "Description": False,
+                                },
+                                "orderedFields": ["Created At", "Source", "Description"],
+                            }
+                        },
+                    },
+                }
+            ],
+        }
+
+        rendered_html = self.doc.render(data)
+
+        assert "<th>Source</th>" in rendered_html, "Visible fallback columns should render"
+        assert "Vigilance - Trend Reports" in rendered_html, "Visible fallback cell values should render"
+        assert "Created At" not in rendered_html, "Hidden fallback headers should not render"
+        assert "2026-04-22T13:21:57.087000" not in rendered_html, "Hidden fallback cell values should not render"
+        assert "Description" not in rendered_html, "Any column hidden in gridState should be omitted"
+        assert "Yaaahoooooo" not in rendered_html, "Hidden column cells should be omitted"
+
     def test_dynamic_table_security(self):
         """Test security features - dangerous content should be escaped."""
         data = {

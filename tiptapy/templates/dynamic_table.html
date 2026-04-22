@@ -1,5 +1,8 @@
 {%- set visible_columns = [] -%}
 {%- set rows = node.attrs.content.rows if node.attrs.content and node.attrs.content.rows else [] -%}
+{%- set grid_columns = node.attrs.gridState.columns if node.attrs.gridState and node.attrs.gridState.columns else {} -%}
+{%- set visibility_model = grid_columns.columnVisibilityModel if grid_columns and grid_columns.columnVisibilityModel else {} -%}
+{%- set ordered_fields = grid_columns.orderedFields if grid_columns and grid_columns.orderedFields else [] -%}
 {%- if rows|length == 0 -%}
 No content found
 {%- else -%}
@@ -11,9 +14,17 @@ No content found
     {%- endif -%}
     {%- endfor -%}
     {%- elif node.attrs.content and node.attrs.content.headers -%}
-    {%- for header in node.attrs.content.headers -%}
+    {%- for header in ordered_fields -%}
+    {%- if header in node.attrs.content.headers and visibility_model.get(header, True) -%}
     {%- set _ = visible_columns.append((header, {"originalName": header, "alias": None, "visible": True, "order":
     loop.index0, "width": None})) -%}
+    {%- endif -%}
+    {%- endfor -%}
+    {%- for header in node.attrs.content.headers -%}
+    {%- if header not in ordered_fields and visibility_model.get(header, True) -%}
+    {%- set _ = visible_columns.append((header, {"originalName": header, "alias": None, "visible": True, "order":
+    visible_columns|length, "width": None})) -%}
+    {%- endif -%}
     {%- endfor -%}
     {%- endif -%}
     <thead>
