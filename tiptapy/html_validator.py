@@ -38,12 +38,12 @@ class HTMLValidator:
         'malignmark', 'mover', 'munder', 'munderover', 'mstyle', 'semantics',
         'annotation', 'annotation-xml'
     }
-    
+
     DANGEROUS_TAGS = {
         'script', 'iframe', 'object', 'embed', 'applet', 'basefont', 'bgsound',
         'link', 'meta', 'title', 'style', 'xmp', 'listing', 'plaintext'
     }
-    
+
     DANGEROUS_ATTRIBUTES = {
         'onerror', 'onclick', 'onload', 'onmouseover', 'onfocus', 'onblur',
         'onchange', 'onsubmit', 'onreset', 'onkeydown', 'onkeyup', 'onkeypress',
@@ -53,28 +53,28 @@ class HTMLValidator:
         'ononline', 'onpagehide', 'onpageshow', 'onpopstate', 'onresize',
         'onstorage', 'onunload'
     }
-    
+
     DANGEROUS_PROTOCOLS = {
         'javascript:', 'vbscript:', 'data:text/html', 'data:application/x-javascript',
         'data:application/javascript', 'data:application/ecmascript'
     }
-    
+
     def is_valid_html(self, content: str) -> Tuple[bool, str]:
         """
         Validate HTML content for safety and well-formedness.
-        
+
         Args:
             content: String content to validate
-            
+
         Returns:
             Tuple of (is_valid, reason)
         """
         if '<' not in content or '>' not in content:
             return False, "No HTML tags found"
-            
+
         if self._has_dangerous_content(content):
             return False, "Contains dangerous content"
-            
+
         try:
             soup = BeautifulSoup(content, 'html.parser')
             if not soup.find():  # Handle empty tags like <>
@@ -88,7 +88,7 @@ class HTMLValidator:
             return True, "Valid HTML"
         except Exception as e:
             return False, f"HTML parsing failed: {str(e)}"
-    
+
     def _has_dangerous_content(self, content: str) -> bool:
         """Check for dangerous strings in content."""
         content_lower = content.lower()
@@ -96,17 +96,18 @@ class HTMLValidator:
             if protocol in content_lower:
                 return True
         return False
-    
+
     def _is_well_formed_html(self, soup: BeautifulSoup, original_content: str) -> bool:
         """Check if HTML is well-formed with balanced tags."""
-        # If BeautifulSoup can parse it without errors, it's likely well-formed
-        # Just check basic structure
-        if not original_content.startswith('<'):
+        # Strip whitespace before checking structure — real-world HTML from rich
+        # text editors commonly has leading/trailing newlines or spaces.
+        stripped = original_content.strip()
+        if not stripped.startswith('<'):
             return False
-        if not (original_content.endswith('>') or original_content.endswith('/>')):
+        if not (stripped.endswith('>') or stripped.endswith('/>')):
             return False
         return True
-    
+
     def _has_only_standard_tags(self, soup: BeautifulSoup) -> bool:
         """Check if all tags are standard HTML tags and not dangerous."""
         for tag in soup.find_all():
@@ -116,7 +117,7 @@ class HTMLValidator:
             if tag_name not in self.STANDARD_HTML_TAGS:
                 return False
         return True
-    
+
     def _has_only_safe_attributes(self, soup: BeautifulSoup) -> bool:
         """Check if all attributes are safe."""
         for tag in soup.find_all():
@@ -125,7 +126,7 @@ class HTMLValidator:
                     attr_name_lower = attr_name.lower()
                     if attr_name_lower in self.DANGEROUS_ATTRIBUTES:
                         return False
-                    
+
                     # Check attribute values for dangerous protocols
                     if isinstance(attr_value, str):
                         attr_value_lower = attr_value.lower()

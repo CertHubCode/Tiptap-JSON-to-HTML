@@ -64,7 +64,7 @@ class TestInvalidHTML:
 
         # Test that mixed content is fully escaped for security
         assert "&lt;p&gt;Valid&lt;/p&gt; &lt;invalid&gt;Invalid&lt;/invalid&gt;" in rendered_html, "Mixed content should be escaped"
-        assert "   &lt;p&gt;   Spaced   &lt;/p&gt;   " in rendered_html, "Mixed content with whitespace should be escaped"
+        assert "<p>   Spaced   </p>" in rendered_html, "Whitespace-padded valid HTML should be preserved"
 
         print("✅ Basic HTML handling works correctly")
 
@@ -375,7 +375,7 @@ class TestInvalidHTML:
         print("✅ Basic edge cases handled correctly")
 
         # Test whitespace handling
-        assert "   &lt;p&gt;   Spaced   &lt;/p&gt;   " in rendered_html, "Mixed content with whitespace should be escaped"
+        assert "<p>   Spaced   </p>" in rendered_html, "Whitespace-padded valid HTML should be preserved"
         print("✅ Whitespace handling correct")
 
         # Test case sensitivity
@@ -384,3 +384,48 @@ class TestInvalidHTML:
         print("✅ Case sensitivity handled correctly")
 
         print("✅ All edge cases handled correctly")
+
+    def test_paragraph_with_nested_anchor_and_real_urls(self):
+        """Test <p> tags containing mixed text and <a> with real HTTPS URLs (regression test)."""
+        data = {
+            "type": "doc",
+            "content": [
+                {
+                    "type": "dynamicTable",
+                    "attrs": {
+                        "columns": {
+                            "col1": {"visible": True, "order": 1}
+                        },
+                        "content": {
+                            "headers": ["col1"],
+                            "rows": [
+                                # Mixed text + anchor with double-quoted href
+                                ['<p>EUDAMED: <a href="https://webgate.ec.europa.eu/eudamed/landing-page#/">https://webgate.ec.europa.eu/eudamed/landing-page#/</a></p>'],
+                                # Trailing whitespace before closing tag
+                                ['<p>FDA – MAUDE: <a href="https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm">https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm</a> </p>'],
+                                # Double-quoted href with deep URL path
+                                ['<p>BfArM: <a href="https://www.bfarm.de/SiteGlobals/Forms/Suche/Filtersuche_Produktgruppe_Formular.html">https://www.bfarm.de/SiteGlobals/Forms/Suche/Filtersuche_Produktgruppe_Formular.html</a></p>'],
+                                # Plain paragraph (no anchor)
+                                ["<p>The following keywords are searched:</p>"],
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+
+        rendered_html = self.doc.render(data)
+
+        # All should be preserved as valid HTML, not escaped
+        assert '<a href="https://webgate.ec.europa.eu/eudamed/landing-page#/">https://webgate.ec.europa.eu/eudamed/landing-page#/</a>' in rendered_html, \
+            "Anchor with double-quoted HTTPS href inside <p> should be preserved"
+        assert '<a href="https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm">' in rendered_html, \
+            "Anchor with trailing whitespace before </p> should be preserved"
+        assert '<a href="https://www.bfarm.de/SiteGlobals/Forms/Suche/Filtersuche_Produktgruppe_Formular.html">' in rendered_html, \
+            "Anchor with deep URL path should be preserved"
+        assert "<p>The following keywords are searched:</p>" in rendered_html, \
+            "Plain paragraph should be preserved"
+
+        # None should be escaped
+        assert "&lt;p&gt;" not in rendered_html, "Valid <p> tags should not be escaped"
+        assert "&lt;a " not in rendered_html, "Valid <a> tags should not be escaped"
