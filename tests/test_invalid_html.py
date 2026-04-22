@@ -138,6 +138,61 @@ class TestInvalidHTML:
         assert "Description" not in rendered_html, "Any column hidden in gridState should be omitted"
         assert "Yaaahoooooo" not in rendered_html, "Hidden column cells should be omitted"
 
+    def test_dynamic_table_partial_columns_do_not_hide_other_headers(self):
+        """Partial attrs.columns entries should act as overrides, not replace the full table schema."""
+        data = {
+            "type": "doc",
+            "content": [
+                {
+                    "type": "dynamicTable",
+                    "attrs": {
+                        "columns": {
+                            "Created At": {
+                                "originalName": "Created At",
+                                "alias": None,
+                                "visible": False,
+                                "order": 0,
+                                "width": None,
+                            }
+                        },
+                        "content": {
+                            "headers": ["Source", "Collection Method", "Description", "Created At"],
+                            "rows": [
+                                [
+                                    "Complaints & customer feedback",
+                                    "Intake via Complaint Form / email inbox",
+                                    "Complaint description",
+                                    "2026-04-21T09:57:34.003000",
+                                ]
+                            ],
+                        },
+                        "gridState": {
+                            "columns": {
+                                "columnVisibilityModel": {
+                                    "Created At": False,
+                                },
+                                "orderedFields": [
+                                    "Created At",
+                                    "Source",
+                                    "Collection Method",
+                                    "Description",
+                                ],
+                            }
+                        },
+                    },
+                }
+            ],
+        }
+
+        rendered_html = self.doc.render(data)
+
+        assert "<th>Source</th>" in rendered_html, "Unconfigured headers should still render"
+        assert "<th>Collection Method</th>" in rendered_html, "Missing attrs.columns entries should fall back to headers"
+        assert "<th>Description</th>" in rendered_html, "Visible headers should not disappear when attrs.columns is partial"
+        assert "Complaints &amp; customer feedback" in rendered_html, "Visible row data should render"
+        assert "Created At" not in rendered_html, "Hidden override columns should remain hidden"
+        assert "2026-04-21T09:57:34.003000" not in rendered_html, "Hidden override cell values should not render"
+
     def test_dynamic_table_security(self):
         """Test security features - dangerous content should be escaped."""
         data = {
