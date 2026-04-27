@@ -1,4 +1,4 @@
 {%- if node.attrs.src -%} {%- set alt = node.attrs.alt|trim -%} {%- set image_url = node.attrs.src|trim -%} {%- if
 image_url -%}
-<img src="{{ image_url }}" alt="{{ alt }}" />
+<img src="{{ image_url }}" style="width:{{node.attrs.width}}px;height:auto;max-width:595px;" />
 {%- endif -%} {%- endif -%}

@@ -3,8 +3,6 @@ import os
 import sys
 from html import escape
 from typing import Dict
-import re
-
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .image import url2mime
@@ -15,6 +13,7 @@ from .macros import (
     make_img_src,
     extract_tag_attrs,
 )
+from .jinja_filters import validate_html_filter, safe_html_filter
 
 __version__ = "0.20.0"
 
@@ -33,14 +32,15 @@ def init_env(path, config):
     env.globals["handle_links"] = build_link_handler(config)
     env.globals["get_audio_player_block"] = get_audio_player_block
     env.globals["get_doc_block"] = get_doc_block
+    
+    # Register custom filters
+    env.filters["validate_html"] = validate_html_filter
+    env.filters["safe_html"] = safe_html_filter
 
     return env
 
 
-def is_html(string):
-    html_tag_pattern = re.compile(
-        r"<\s*[a-zA-Z]+[^>]*>")  # Look for valid HTML tags
-    return bool(html_tag_pattern.search(string))
+
 
 
 def _get_abs_template_path(path_str):
@@ -65,7 +65,9 @@ def escape_values_recursive(node):
     elif isinstance(node, list):
         return [escape_values_recursive(x) for x in node]
     elif isinstance(node, str):
-        return node if is_html(node) else escape(node)
+        # Use proper HTML validation instead of simple regex
+        from .html_validator import is_valid_html
+        return node if is_valid_html(node) else escape(node)
     return node
 
 
