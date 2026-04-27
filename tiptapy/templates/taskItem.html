@@ -1,6 +1,7 @@
 <label class="task-item" style="display: flex; align-items: center; line-height: 0">
-  <input type="checkbox" {% if node.attrs.checked %}checked{% endif %} disabled style="margin-right: 10px;">
-  <span class="task-item-label">
+  <input type="checkbox" {% if node.attrs.checked %}checked{% endif %} disabled
+    style="margin-right: 10px;transform: scale(0.85);">
+  <span class="task-item-label" style="font-size: 12px;">
     {%- for content in node.content -%}
     {%- with template=content.type + '.html', node=content -%}
     {%- include template -%}

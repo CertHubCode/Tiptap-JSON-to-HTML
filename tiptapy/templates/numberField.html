@@ -1,1 +1,1 @@
-<span class="numberField">{{ node.attrs.fieldValue }}</span>
+<span class="numberField">{{ node.attrs.fieldValue if node.attrs.fieldValue is not none else '' }}</span>
