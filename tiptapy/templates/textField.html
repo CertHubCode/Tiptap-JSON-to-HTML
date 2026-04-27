@@ -1,1 +1,2 @@
-<span class="textField">{{node.attrs.fieldValue }}</span>
+{% if node.attrs.fieldName %}<span class="textField-header">{{ node.attrs.fieldName }}</span>
+{% endif %}<span class="textField">{{ node.attrs.fieldValue }}</span>
