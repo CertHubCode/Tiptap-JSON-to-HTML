@@ -1,0 +1,27 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "checkboxGroup",
+      "attrs": {
+        "fieldType": "checkboxGroup",
+        "fieldId": "checkboxGroup-abc123",
+        "fieldName": "Checkbox Group",
+        "fieldValue": ["option1"],
+        "options": [
+          {
+            "value": "option1",
+            "label": "Option 1"
+          },
+          {
+            "value": "option2",
+            "label": "Option 2"
+          }
+        ],
+        "defaultValue": [],
+        "orientation": "horizontal",
+        "lastUpdated": 1745938475370
+      }
+    }
+  ]
+}

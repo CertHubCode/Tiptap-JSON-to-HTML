@@ -56,6 +56,7 @@ tags_to_test = (
     "dateField",
     "selectField",
     "radioField",
+    "checkboxGroup",
 )
 
 class config:

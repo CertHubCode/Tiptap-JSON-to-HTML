@@ -2,11 +2,11 @@
 {% endif %}<div class="checkboxGroup"
     style="display: flex; flex-direction: {{ 'row' if node.attrs.orientation == 'horizontal' else 'column' }}; flex-wrap: wrap; align-items: {{ 'center' if node.attrs.orientation == 'horizontal' else 'flex-start' }};">
     {%- for option in node.attrs.options -%}
-    <div class="checkbox-span">
+    <div class="checkbox-span" style="display: flex; flex-direction: row; align-items: center; gap: 8px; margin-right: 16px;">
         <input class="checkbox" type="checkbox" {% if node.attrs.fieldValue %} {% if option.value in
             node.attrs.fieldValue %}checked{% endif %} {% else %} {% if option.value in node.attrs.defaultValue
             %}checked{% endif %} {% endif %} disabled />
-        <label class="checkbox-label">{{ option.label }}</label>
+        <label class="checkbox-label" style="white-space: nowrap;">{{ option.label }}</label>
     </div>
     {%- endfor -%}
 </div>
