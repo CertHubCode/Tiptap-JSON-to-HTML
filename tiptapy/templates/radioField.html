@@ -1,11 +1,12 @@
-<span style="font-weight: bold; display: block; margin-bottom: 0.4em; font-size: 10pt; color: #160047;">{{ node.attrs.fieldName }}</span>
-<div class="radioField" style="display: flex; flex-direction: row; gap: 8px; align-items: center;">
+<span style="font-weight: bold; display: block; margin-bottom: 0.4em; font-size: 10pt; color: #160047;">{{
+    node.attrs.fieldName }}</span>
+<div class="radioField" style="display: flex; flex-direction: {{ 'row' if node.attrs.orientation == 'horizontal' else 'column' }}; flex-wrap: wrap; align-items: {{ 'center' if node.attrs.orientation == 'horizontal' else 'flex-start' }}; gap: {{ '16px' if node.attrs.orientation == 'horizontal' else '6px' }};">
     {% for option in node.attrs.options %}
-    <div class="radioField-option" style="display: flex; flex-direction: row; align-items: center;gap: 16px;">
+    <div class="radioField-option" style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
         <input class="radioField-option-input" type="radio" {%if node.attrs.fieldValue %} {% if
             option.value==node.attrs.fieldValue %}checked{% endif %} {% else %} {% if
-            option.value==node.attrs.defaultValue %}checked{% endif %} {% endif %} style="margin-right: 16px;" />
-        <label class="radioField-option-label" style="white-space: nowrap; margin-right: 32px;">{{
+            option.value==node.attrs.defaultValue %}checked{% endif %} {% endif %} />
+        <label class="radioField-option-label" style="white-space: nowrap;">{{
             option.label }}</label>
     </div>
     {% endfor %}
