@@ -1,1 +1,5 @@
-<span style="display: inline-block; vertical-align: top; margin-right: 12px;">{% if node.attrs.fieldName %}<span style="font-weight: bold; display: block; margin-bottom: 0.2em; font-size: 10pt; color: #160047;">{{ node.attrs.fieldName }}</span>{% endif %}<span class="numberField">{{ node.attrs.fieldValue if node.attrs.fieldValue is not none else '' }}</span></span>
+<span style="display: inline-block; vertical-align: top; margin-right: 12px;">{% if node.attrs.fieldName %}<span
+        style="display: block; margin-bottom: 0.3em; font-size: 8.5pt; color: #6b7280;">{{ node.attrs.fieldName
+        }}</span>{% endif %}<span class="numberField">{% if node.attrs.fieldValue is not none and node.attrs.fieldValue
+        != '' %}{{ node.attrs.fieldValue }}{% else %}<span style="color: #9ca3af;">{{ node.attrs.placeholder }}</span>{%
+        endif %}</span></span>
