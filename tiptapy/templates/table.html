@@ -1,25 +1,81 @@
-<table class="basic-table">
-    {%- for row in node.content -%}
-    <tr>
-        {%- for cell in row.content -%}
-        {%- if cell.type == 'tableHeader' -%}
-        <th {% if cell.attrs.colspan and cell.attrs.colspan> 1 %}colspan="{{ cell.attrs.colspan }}"{% endif %}>
-            {%- for content in cell.content -%}
-            {%- with template=content.type + '.html', node=content -%}
-            {%- include template -%}
-            {%- endwith -%}
-            {%- endfor %}
-        </th>
-        {%- else -%}
-        <td {% if cell.attrs.colspan and cell.attrs.colspan> 1 %}colspan="{{ cell.attrs.colspan }}"{% endif %}>
-            {%- for content in cell.content -%}
-            {%- with template=content.type + '.html', node=content -%}
-            {%- include template -%}
-            {%- endwith -%}
-            {%- endfor %}
-        </td>
-        {%- endif -%}
-        {%- endfor -%}
-    </tr>
+{#- TipTap table column widths (editor px). Cap matches ~A4 content width. -#}
+{%- set MAX_TABLE_WIDTH = 670 -%}
+{%- set FLEX_COL_WEIGHT = 25 -%}
+{%- set first_row = node.content[0] if node.content else none -%}
+{%- set col_widths = [] -%}
+{%- if first_row -%}
+{%- for cell in first_row.content -%}
+{%- set colspan = cell.attrs.colspan if cell.attrs.colspan else 1 -%}
+{%- for col_index in range(colspan) -%}
+{%- set col_width = none -%}
+{%- if cell.attrs.colwidth and (cell.attrs.colwidth|length) > col_index and cell.attrs.colwidth[col_index] -%}
+{%- set col_width = cell.attrs.colwidth[col_index]|int -%}
+{%- endif -%}
+{%- set _ = col_widths.append(col_width) -%}
+{%- endfor -%}
+{%- endfor -%}
+{%- endif -%}
+{%- set width_ns = namespace(total=0, defined_count=0) -%}
+{%- for w in col_widths -%}
+{%- if w -%}
+{%- set width_ns.total = width_ns.total + w -%}
+{%- set width_ns.defined_count = width_ns.defined_count + 1 -%}
+{%- endif -%}
+{%- endfor -%}
+{%- set has_missing = (col_widths|length == 0) or (width_ns.defined_count < col_widths|length) -%} {%- set
+    all_defined=(col_widths|length> 0) and (width_ns.defined_count == col_widths|length) and (width_ns.total > 0) -%}
+    {%- set overflows = width_ns.total > MAX_TABLE_WIDTH -%}
+    {#-
+    1. Any missing col width → table 100%; fixed cols keep px (or % if fixed sum overflows).
+    2. All cols have width → table = sum px (or 100% + % cols if sum overflows).
+    -#}
+    {%- if has_missing or (all_defined and overflows) or (col_widths|length == 0) -%}
+    {%- set table_width_css = 'width: 100%; max-width: 100%; table-layout: fixed;' -%}
+    {%- else -%}
+    {%- set table_width_css = 'width: ' ~ width_ns.total ~ 'px; max-width: 100%; table-layout: fixed;' -%}
+    {%- endif -%}
+    {%- set use_percentages = overflows -%}
+    {%- set pct_ns = namespace(total=0) -%}
+    {%- if use_percentages -%}
+    {%- for w in col_widths -%}
+    {%- set pct_ns.total = pct_ns.total + (w if w else FLEX_COL_WEIGHT) -%}
     {%- endfor -%}
-</table>
+    {%- endif -%}
+    <table class="basic-table" style="{{ table_width_css }}">
+        {%- if col_widths -%}
+        <colgroup>
+            {%- for w in col_widths -%}
+            {%- if use_percentages and pct_ns.total > 0 -%}
+            <col style="width: {{ ((w if w else FLEX_COL_WEIGHT) / pct_ns.total * 100)|round(4) }}%">
+            {%- elif w -%}
+            <col style="width: {{ w }}px">
+            {%- else -%}
+            <col>
+            {%- endif -%}
+            {%- endfor -%}
+        </colgroup>
+        {%- endif -%}
+        {%- for row in node.content -%}
+        <tr>
+            {%- for cell in row.content -%}
+            {%- if cell.type == 'tableHeader' -%}
+            <th {% if cell.attrs.colspan and cell.attrs.colspan> 1 %}colspan="{{ cell.attrs.colspan }}"{% endif %}>
+                {%- for content in cell.content -%}
+                {%- with template=content.type + '.html', node=content -%}
+                {%- include template -%}
+                {%- endwith -%}
+                {%- endfor %}
+            </th>
+            {%- else -%}
+            <td {% if cell.attrs.colspan and cell.attrs.colspan> 1 %}colspan="{{ cell.attrs.colspan }}"{% endif %}>
+                {%- for content in cell.content -%}
+                {%- with template=content.type + '.html', node=content -%}
+                {%- include template -%}
+                {%- endwith -%}
+                {%- endfor %}
+            </td>
+            {%- endif -%}
+            {%- endfor -%}
+        </tr>
+        {%- endfor -%}
+    </table>
