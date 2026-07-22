@@ -1,85 +1,35 @@
+{%- set MAX_TABLE_WIDTH = 670 -%}
+{%- set FLEX_COL_WEIGHT = 25 -%}
 {%- set visible_columns = [] -%}
-{%- set rows = node.attrs.content.rows if node.attrs.content and node.attrs.content.rows else [] -%}
+{%- set rows = node.attrs.content.rows if node.attrs.content and node.attrs.content.rows is iterable and
+node.attrs.content.rows is not string else [] -%}
 {%- set grid_columns = node.attrs.gridState.columns if node.attrs.gridState and node.attrs.gridState.columns else {} -%}
-{%- set visibility_model = grid_columns.columnVisibilityModel if grid_columns and grid_columns.columnVisibilityModel else {} -%}
+{%- set grid_dimensions = grid_columns.dimensions if grid_columns and grid_columns.dimensions else {} -%}
+{%- set visibility_model = grid_columns.columnVisibilityModel if grid_columns and grid_columns.columnVisibilityModel
+else {} -%}
 {%- set ordered_fields = grid_columns.orderedFields if grid_columns and grid_columns.orderedFields else [] -%}
 {%- set configured_columns = node.attrs.columns if node.attrs.columns else {} -%}
+{%- set table_settings = node.attrs.tableSettings if node.attrs.tableSettings else {} -%}
+{%- set column_font_size = table_settings.columnFontSize if table_settings.columnFontSize else '12px' -%}
+{%- set row_font_size = table_settings.rowFontSize if table_settings.rowFontSize else '12px' -%}
 {%- if rows|length == 0 -%}
 No content found
 {%- else -%}
-<table>
-    {%- if node.attrs.content and node.attrs.content.headers -%}
-    {%- for header in ordered_fields -%}
-    {%- if header in node.attrs.content.headers -%}
-    {%- set props = configured_columns.get(header, {}) -%}
-    {%- set is_visible = props.visible if props.visible is defined else visibility_model.get(header, True) -%}
-    {%- if is_visible -%}
-    {%- set _ = visible_columns.append((header, {
-        "originalName": props.originalName|default(header),
-        "alias": props.alias|default(None),
-        "visible": True,
-        "order": props.order|default(loop.index0),
-        "width": props.width|default(None)
-    })) -%}
-    {%- endif -%}
-    {%- endif -%}
-    {%- endfor -%}
-    {%- for header in node.attrs.content.headers -%}
-    {%- if header not in ordered_fields -%}
-    {%- set props = configured_columns.get(header, {}) -%}
-    {%- set is_visible = props.visible if props.visible is defined else visibility_model.get(header, True) -%}
-    {%- if is_visible -%}
-    {%- set _ = visible_columns.append((header, {
-        "originalName": props.originalName|default(header),
-        "alias": props.alias|default(None),
-        "visible": True,
-        "order": props.order|default(visible_columns|length),
-        "width": props.width|default(None)
-    })) -%}
-    {%- endif -%}
-    {%- endif -%}
-    {%- endfor -%}
-    {%- endif -%}
-    <thead>
-        <tr>
-            {%- for header, props in visible_columns|sort(attribute='1.order') -%}
-            {% set header_text = props.alias if props.alias else props.originalName|default(header) %}
-            {% set header_text = header_text | to_traced_display_label %}
-            {% set ns = namespace(text=header_text) %}
-            {%- for mark in node.marks if node.marks -%}
-            {%- set ns.text -%}
-            {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
-            {%- include template -%}
-            {%- endwith -%}
-            {%- endset -%}
-            {%- endfor -%}
-            <th {% if props.width %}style="width: {{ props.width }}px" {% endif %}>{{ns.text | safe_html }}</th>
-            {%- endfor -%}
-        </tr>
-    </thead>
-    <tbody>
-        {%- for row in rows -%}
-        <tr>
-            {%- for header, props in visible_columns|sort(attribute='1.order') -%}
-            {%- if header in node.attrs.content.headers -%}
-            {% set cell_index = node.attrs.content.headers.index(header) %}
-            {% set ns = namespace(text=row[cell_index]) %}
-            {%- else -%}
-            {% set ns = namespace(text='') %}
-            {%- endif -%}
-            {%- for mark in node.marks if node.marks -%}
-            {%- set ns.text -%}
-            {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
-            {%- include template -%}
-            {%- endwith -%}
-            {%- endset -%}
-            {%- endfor -%}
-            <td {% if props.width %}style="width: {{ props.width }}px" {% endif %}>{{ns.text | safe_html }}</td>
-            {%- endfor -%}
-        </tr>
-        {%- endfor -%}
-    </tbody>
-</table>
+{%- if node.attrs.content and node.attrs.content.headers -%}
+{%- for header in ordered_fields -%}
+{%- if header in node.attrs.content.headers -%}
+{%- set props = configured_columns.get(header, {}) -%}
+{%- set dim_width = grid_dimensions.get(header, {}).get('width') if grid_dimensions else none -%}
+{%- set is_visible = props.visible if props.visible is defined else visibility_model.get(header, True) -%}
+{%- if is_visible -%}
+{%- set col_w = props.width if props.width else dim_width -%}
+{%- set _ = visible_columns.append((header, {
+"originalName": props.originalName|default(header),
+"alias": props.alias|default(None),
+"visible": True,
+"order": props.order|default(loop.index0),
+"width": col_w|int if col_w else none
+})) -%}
 {%- endif -%}
 {%- endif -%}
 {%- endfor -%}
@@ -118,46 +68,64 @@ No content found
     {%- else -%}
     {%- set table_width_css = 'width: ' ~ width_ns.total ~ 'px; max-width: 100%; table-layout: fixed;' -%}
     {%- endif -%}
+    {%- set use_percentages = overflows -%}
+    {%- set pct_ns = namespace(total=0) -%}
+    {%- if use_percentages -%}
+    {%- for header, props in sorted_columns -%}
+    {%- set pct_ns.total = pct_ns.total + (props.width if props.width else FLEX_COL_WEIGHT) -%}
     {%- endfor -%}
     {%- endif -%}
-    <thead>
-        <tr>
-            {%- for header, props in visible_columns|sort(attribute='1.order') -%}
-            {% set header_text = props.alias if props.alias else props.originalName|default(header) %}
-            {% set header_text = header_text | to_traced_display_label %}
-            {% set ns = namespace(text=header_text) %}
-            {%- for mark in node.marks if node.marks -%}
-            {%- set ns.text -%}
-            {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
-            {%- include template -%}
-            {%- endwith -%}
-            {%- endset -%}
-            {%- endfor -%}
-            <th {% if props.width %}style="width: {{ props.width }}px" {% endif %}>{{ns.text | safe_html }}</th>
-            {%- endfor -%}
-        </tr>
-    </thead>
-    <tbody>
-        {%- for row in rows -%}
-        <tr>
-            {%- for header, props in visible_columns|sort(attribute='1.order') -%}
-            {%- if header in node.attrs.content.headers -%}
-            {% set cell_index = node.attrs.content.headers.index(header) %}
-            {% set ns = namespace(text=row[cell_index]) %}
+    <table class="dynamic-table" style="{{ table_width_css }}">
+        <colgroup>
+            {%- for header, props in sorted_columns -%}
+            {%- if use_percentages and pct_ns.total > 0 -%}
+            <col
+                style="width: {{ ((props.width if props.width else FLEX_COL_WEIGHT) / pct_ns.total * 100)|round(4) }}%">
+            {%- elif props.width -%}
+            <col style="width: {{ props.width }}px">
             {%- else -%}
-            {% set ns = namespace(text='') %}
+            <col>
             {%- endif -%}
-            {%- for mark in node.marks if node.marks -%}
-            {%- set ns.text -%}
-            {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
-            {%- include template -%}
-            {%- endwith -%}
-            {%- endset -%}
             {%- endfor -%}
-            <td {% if props.width %}style="width: {{ props.width }}px" {% endif %}>{{ns.text | safe_html }}</td>
+        </colgroup>
+        <thead>
+            <tr>
+                {%- for header, props in sorted_columns -%}
+                {% set header_text = props.alias if props.alias else props.originalName|default(header) %}
+                {% set header_text = header_text | to_traced_display_label %}
+                {% set ns = namespace(text=header_text) %}
+                {%- for mark in node.marks if node.marks -%}
+                {%- set ns.text -%}
+                {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
+                {%- include template -%}
+                {%- endwith -%}
+                {%- endset -%}
+                {%- endfor -%}
+                <th style="font-size: {{ column_font_size }}">{{ns.text | safe_html }}</th>
+                {%- endfor -%}
+            </tr>
+        </thead>
+        <tbody>
+            {%- for row in rows -%}
+            <tr>
+                {%- for header, props in sorted_columns -%}
+                {%- if header in node.attrs.content.headers -%}
+                {% set cell_index = node.attrs.content.headers.index(header) %}
+                {% set ns = namespace(text=row[cell_index]) %}
+                {%- else -%}
+                {% set ns = namespace(text='') %}
+                {%- endif -%}
+                {%- for mark in node.marks if node.marks -%}
+                {%- set ns.text -%}
+                {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
+                {%- include template -%}
+                {%- endwith -%}
+                {%- endset -%}
+                {%- endfor -%}
+                <td style="font-size: {{ row_font_size }}">{{ns.text | safe_html }}</td>
+                {%- endfor -%}
+            </tr>
             {%- endfor -%}
-        </tr>
-        {%- endfor -%}
-    </tbody>
-</table>
-{%- endif -%}
+        </tbody>
+    </table>
+    {%- endif -%}
