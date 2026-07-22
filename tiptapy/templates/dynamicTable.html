@@ -81,3 +81,83 @@ No content found
     </tbody>
 </table>
 {%- endif -%}
+{%- endif -%}
+{%- endfor -%}
+{%- for header in node.attrs.content.headers -%}
+{%- if header not in ordered_fields -%}
+{%- set props = configured_columns.get(header, {}) -%}
+{%- set dim_width = grid_dimensions.get(header, {}).get('width') if grid_dimensions else none -%}
+{%- set is_visible = props.visible if props.visible is defined else visibility_model.get(header, True) -%}
+{%- if is_visible -%}
+{%- set col_w = props.width if props.width else dim_width -%}
+{%- set _ = visible_columns.append((header, {
+"originalName": props.originalName|default(header),
+"alias": props.alias|default(None),
+"visible": True,
+"order": props.order|default(visible_columns|length),
+"width": col_w|int if col_w else none
+})) -%}
+{%- endif -%}
+{%- endif -%}
+{%- endfor -%}
+{%- endif -%}
+{%- set sorted_columns = visible_columns|sort(attribute='1.order') -%}
+{%- set width_ns = namespace(total=0, defined_count=0) -%}
+{%- for header, props in sorted_columns -%}
+{%- if props.width -%}
+{%- set width_ns.total = width_ns.total + props.width -%}
+{%- set width_ns.defined_count = width_ns.defined_count + 1 -%}
+{%- endif -%}
+{%- endfor -%}
+{%- set has_missing = (sorted_columns|length == 0) or (width_ns.defined_count < sorted_columns|length) -%} {%- set
+    all_defined=(sorted_columns|length> 0) and (width_ns.defined_count == sorted_columns|length) and (width_ns.total >
+    0) -%}
+    {%- set overflows = width_ns.total > MAX_TABLE_WIDTH -%}
+    {%- if has_missing or (all_defined and overflows) or (sorted_columns|length == 0) -%}
+    {%- set table_width_css = 'width: 100%; max-width: 100%; table-layout: fixed;' -%}
+    {%- else -%}
+    {%- set table_width_css = 'width: ' ~ width_ns.total ~ 'px; max-width: 100%; table-layout: fixed;' -%}
+    {%- endif -%}
+    {%- endfor -%}
+    {%- endif -%}
+    <thead>
+        <tr>
+            {%- for header, props in visible_columns|sort(attribute='1.order') -%}
+            {% set header_text = props.alias if props.alias else props.originalName|default(header) %}
+            {% set header_text = header_text | to_traced_display_label %}
+            {% set ns = namespace(text=header_text) %}
+            {%- for mark in node.marks if node.marks -%}
+            {%- set ns.text -%}
+            {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
+            {%- include template -%}
+            {%- endwith -%}
+            {%- endset -%}
+            {%- endfor -%}
+            <th {% if props.width %}style="width: {{ props.width }}px" {% endif %}>{{ns.text | safe_html }}</th>
+            {%- endfor -%}
+        </tr>
+    </thead>
+    <tbody>
+        {%- for row in rows -%}
+        <tr>
+            {%- for header, props in visible_columns|sort(attribute='1.order') -%}
+            {%- if header in node.attrs.content.headers -%}
+            {% set cell_index = node.attrs.content.headers.index(header) %}
+            {% set ns = namespace(text=row[cell_index]) %}
+            {%- else -%}
+            {% set ns = namespace(text='') %}
+            {%- endif -%}
+            {%- for mark in node.marks if node.marks -%}
+            {%- set ns.text -%}
+            {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
+            {%- include template -%}
+            {%- endwith -%}
+            {%- endset -%}
+            {%- endfor -%}
+            <td {% if props.width %}style="width: {{ props.width }}px" {% endif %}>{{ns.text | safe_html }}</td>
+            {%- endfor -%}
+        </tr>
+        {%- endfor -%}
+    </tbody>
+</table>
+{%- endif -%}
