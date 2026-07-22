@@ -13,7 +13,11 @@ from .macros import (
     make_img_src,
     extract_tag_attrs,
 )
-from .jinja_filters import validate_html_filter, safe_html_filter
+from .jinja_filters import (
+    safe_html_filter,
+    to_traced_display_label_filter,
+    validate_html_filter,
+)
 
 __version__ = "0.20.0"
 
@@ -36,6 +40,7 @@ def init_env(path, config):
     # Register custom filters
     env.filters["validate_html"] = validate_html_filter
     env.filters["safe_html"] = safe_html_filter
+    env.filters["to_traced_display_label"] = to_traced_display_label_filter
 
     return env
 

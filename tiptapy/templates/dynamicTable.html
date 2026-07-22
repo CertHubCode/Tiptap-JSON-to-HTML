@@ -43,8 +43,8 @@ No content found
     <thead>
         <tr>
             {%- for header, props in visible_columns|sort(attribute='1.order') -%}
-            {% set header_text = props.alias if props.alias else props.originalName %}
             {% set header_text = props.alias if props.alias else props.originalName|default(header) %}
+            {% set header_text = header_text | to_traced_display_label %}
             {% set ns = namespace(text=header_text) %}
             {%- for mark in node.marks if node.marks -%}
             {%- set ns.text -%}
