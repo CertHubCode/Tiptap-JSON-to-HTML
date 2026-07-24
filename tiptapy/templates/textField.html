@@ -1,4 +1,5 @@
 <span style="display: inline-block; vertical-align: top; margin-right: 12px;">{% if node.attrs.fieldName %}<span
-        style="display: block; margin-bottom: 0.3em; font-size: 8.5pt; color: #6b7280;">{{ node.attrs.fieldName
-        }}</span>{% endif %}<span class="textField">{% if node.attrs.fieldValue %}{{ node.attrs.fieldValue }}{% else
-        %}<span style="color: #9ca3af;">{{ node.attrs.placeholder }}</span>{% endif %}</span></span>
+                style="display: block; margin-bottom: 0.3em; font-size: 8.5pt; color: #6b7280;">{{ node.attrs.fieldName
+                }}</span>{% endif %}<span class="textField">{% if node.attrs.fieldValue %}{{ node.attrs.fieldValue |
+                markdown }}{% else
+                %}<span style="color: #9ca3af;">{{ node.attrs.placeholder }}</span>{% endif %}</span></span>

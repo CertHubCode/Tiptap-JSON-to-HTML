@@ -14,6 +14,7 @@ from .macros import (
     extract_tag_attrs,
 )
 from .jinja_filters import (
+    markdown_filter,
     safe_html_filter,
     to_traced_display_label_filter,
     validate_html_filter,
@@ -41,6 +42,7 @@ def init_env(path, config):
     env.filters["validate_html"] = validate_html_filter
     env.filters["safe_html"] = safe_html_filter
     env.filters["to_traced_display_label"] = to_traced_display_label_filter
+    env.filters["markdown"] = markdown_filter
 
     return env
 
