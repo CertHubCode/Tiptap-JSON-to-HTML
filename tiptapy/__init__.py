@@ -94,8 +94,12 @@ class BaseDoc:
         self.t = environ.get_template(f"{self.doc_type}.html")
         self.t.environment.globals["locked"] = self.locked
 
-    def render(self, in_data):
+    def render(self, in_data, page_orientation="portrait"):
         in_data = in_data if isinstance(in_data, dict) else json.loads(in_data)
         node = in_data if isinstance(in_data, dict) else json.loads(in_data)
         node = escape_values_recursive(node)
-        return self.t.render(node=node)
+        # Propagated via Jinja's default "include with context" behavior, so
+        # nested per-node-type templates (e.g. dynamicTable.html) can size
+        # themselves against the page's actual orientation without every
+        # intermediate template having to thread it through explicitly.
+        return self.t.render(node=node, page_orientation=page_orientation or "portrait")

@@ -1,4 +1,4 @@
-{%- set MAX_TABLE_WIDTH = 670 -%}
+{%- set MAX_TABLE_WIDTH = 970 if page_orientation == 'landscape' else 670 -%}
 {%- set FLEX_COL_WEIGHT = 25 -%}
 {%- set visible_columns = [] -%}
 {%- set rows = node.attrs.content.rows if node.attrs.content and node.attrs.content.rows is iterable and
