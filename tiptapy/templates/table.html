@@ -1,4 +1,63 @@
-<table class="basic-table">
+{%- set nested_ns = namespace(found=False) -%}
+{%- for row in node.content -%}
+{%- for cell in row.content -%}
+{%- for content in cell.content -%}
+{%- if content.type in ('table', 'dynamicTable', 'dynamic_table') -%}
+{%- set nested_ns.found = True -%}
+{%- endif -%}
+{%- endfor -%}
+{%- endfor -%}
+{%- endfor -%}
+{%- if not nested_ns.found -%}
+{%- set MAX_TABLE_WIDTH = 970 if page_orientation == 'landscape' else 670 -%}
+{%- set FLEX_COL_WEIGHT = 25 -%}
+{%- set header_row = node.content[0] if node.content else none -%}
+{%- set col_ns = namespace(widths=[], total=0, defined_count=0, count=0) -%}
+{%- if header_row and header_row.content -%}
+{%- for cell in header_row.content -%}
+{%- set span = cell.attrs.colspan if cell.attrs.colspan else 1 -%}
+{%- set cw = cell.attrs.colwidth if cell.attrs.colwidth else [] -%}
+{%- for i in range(span) -%}
+{%- set w = cw[i] if cw and i < cw|length and cw[i] else none -%}
+{%- set col_ns.widths = col_ns.widths + [w] -%}
+{%- set col_ns.count = col_ns.count + 1 -%}
+{%- if w -%}
+{%- set col_ns.total = col_ns.total + w -%}
+{%- set col_ns.defined_count = col_ns.defined_count + 1 -%}
+{%- endif -%}
+{%- endfor -%}
+{%- endfor -%}
+{%- endif -%}
+{%- set has_missing = col_ns.count == 0 or col_ns.defined_count < col_ns.count -%}
+{%- set all_defined = col_ns.count > 0 and col_ns.defined_count == col_ns.count and col_ns.total > 0 -%}
+{%- set overflows = col_ns.total > MAX_TABLE_WIDTH -%}
+{%- if has_missing or (all_defined and overflows) or col_ns.count == 0 -%}
+{%- set table_width_css = 'width: 100%; max-width: 100%; table-layout: fixed;' -%}
+{%- else -%}
+{%- set table_width_css = 'width: ' ~ col_ns.total ~ 'px; max-width: 100%; table-layout: fixed;' -%}
+{%- endif -%}
+{%- set use_percentages = overflows -%}
+{%- set pct_ns = namespace(total=0) -%}
+{%- if use_percentages -%}
+{%- for w in col_ns.widths -%}
+{%- set pct_ns.total = pct_ns.total + (w if w else FLEX_COL_WEIGHT) -%}
+{%- endfor -%}
+{%- endif -%}
+{%- endif -%}
+<table class="basic-table"{% if not nested_ns.found %} style="{{ table_width_css }}"{% endif %}>
+    {%- if not nested_ns.found and col_ns.widths -%}
+    <colgroup>
+        {%- for w in col_ns.widths -%}
+        {%- if use_percentages and pct_ns.total > 0 -%}
+        <col style="width: {{ ((w if w else FLEX_COL_WEIGHT) / pct_ns.total * 100)|round(4) }}%">
+        {%- elif w -%}
+        <col style="width: {{ w }}px">
+        {%- else -%}
+        <col>
+        {%- endif -%}
+        {%- endfor -%}
+    </colgroup>
+    {%- endif -%}
     {%- for row in node.content -%}
     <tr>
         {%- for cell in row.content -%}
