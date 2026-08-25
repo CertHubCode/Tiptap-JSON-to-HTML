@@ -3,7 +3,7 @@ import os
 import sys
 from html import escape
 from typing import Dict
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from jinja2 import ChainableUndefined, Environment, FileSystemLoader, select_autoescape
 
 from .image import url2mime
 from .macros import (
@@ -29,6 +29,7 @@ def init_env(path, config):
     env = Environment(
         loader=FileSystemLoader(path),
         autoescape=select_autoescape(enabled_extensions=("html")),
+        undefined=ChainableUndefined,
     )
     # https://stackoverflow.com/a/6038550
     env.globals["url2mime"] = url2mime

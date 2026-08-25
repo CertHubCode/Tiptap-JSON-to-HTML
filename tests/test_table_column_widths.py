@@ -189,3 +189,53 @@ class TestTableColumnWidths:
         assert outer_table_open.startswith(' class="basic-table">'), (
             "Outer table with a nested dynamicTable cell must render without a forced width/table-layout style"
         )
+
+    def test_header_cell_missing_attrs_key_does_not_crash(self):
+        """A cell dict that omits "attrs" entirely (not attrs: {}) must not
+        blow up the header-row width-derivation pass in table.html."""
+        header_cell_no_attrs = {
+            "type": "tableHeader",
+            "content": [{"type": "paragraph", "content": [{"type": "text", "text": "A"}]}],
+        }
+        data = _table_doc(
+            header_cells=[header_cell_no_attrs, _cell("tableHeader", "B", colwidth=[100])],
+            body_cells=[_cell("tableCell", "a1"), _cell("tableCell", "b1")],
+        )
+
+        rendered_html = self.doc.render(data)
+
+        assert "<table" in rendered_html
+        assert "A" in rendered_html and "B" in rendered_html
+
+    def test_body_cell_missing_attrs_key_does_not_crash(self):
+        """A body-row cell without "attrs" hits the separate colspan
+        rendering call site (table.html <td>), not just the header-row
+        width calculation."""
+        body_cell_no_attrs = {
+            "type": "tableCell",
+            "content": [{"type": "paragraph", "content": [{"type": "text", "text": "b1"}]}],
+        }
+        data = _table_doc(
+            header_cells=[
+                _cell("tableHeader", "A", colwidth=[100]),
+                _cell("tableHeader", "B", colwidth=[100]),
+            ],
+            body_cells=[_cell("tableCell", "a1"), body_cell_no_attrs],
+        )
+
+        rendered_html = self.doc.render(data)
+
+        assert "<table" in rendered_html
+        assert "b1" in rendered_html
+
+    def test_dynamic_table_missing_attrs_key_does_not_crash(self):
+        """A dynamicTable node with no "attrs" key at all must fall back
+        gracefully instead of raising in dynamicTable.html."""
+        data = {
+            "type": "doc",
+            "content": [{"type": "dynamicTable"}],
+        }
+
+        rendered_html = self.doc.render(data)
+
+        assert "No content found" in rendered_html
