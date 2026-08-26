@@ -1,0 +1,26 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Before the break."
+        }
+      ]
+    },
+    {
+      "type": "pageBreak"
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "After the break."
+        }
+      ]
+    }
+  ]
+}
