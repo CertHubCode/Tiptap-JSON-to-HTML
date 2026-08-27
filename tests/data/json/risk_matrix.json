@@ -1,0 +1,28 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "dynamicTable",
+      "attrs": {
+        "path": ["Risk Evaluation Matrix"],
+        "displayPath": ["Risk Evaluation Matrix"],
+        "type": "list",
+        "columns": {
+          "Marginal": {"originalName": "Marginal", "alias": null, "visible": true, "order": 0, "width": null},
+          "Minor": {"originalName": "Minor", "alias": null, "visible": true, "order": 1, "width": null}
+        },
+        "content": {
+          "headers": ["Marginal", "Minor"],
+          "rowLabels": ["Unthinkable", "Unlikely"],
+          "rows": [
+            [{"value": 0, "color": "#a5d6a7"}, {"value": 1, "color": "#ffcc80"}],
+            [{"value": 0, "color": "#a5d6a7"}, {"value": 0, "color": "#a5d6a7"}]
+          ],
+          "unclassifiedCount": 0
+        },
+        "gridState": {},
+        "tableSettings": {"columnFontSize": "12px", "rowFontSize": "12px"}
+      }
+    }
+  ]
+}

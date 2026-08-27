@@ -12,6 +12,11 @@ else {} -%}
 {%- set table_settings = node.attrs.tableSettings if node.attrs.tableSettings else {} -%}
 {%- set column_font_size = table_settings.columnFontSize if table_settings.columnFontSize else '12px' -%}
 {%- set row_font_size = table_settings.rowFontSize if table_settings.rowFontSize else '12px' -%}
+{#- Matrix-shaped content (a risk evaluation matrix or similar) carries a rowLabels
+   array alongside headers/rows — see MatrixDataTransformer (Document) and
+   matrixGridUtils.ts (Frontend). Detected by this field's presence, same as
+   everywhere else; node.attrs.type stays "list" for this content too. -#}
+{%- set row_labels = node.attrs.content.rowLabels if node.attrs.content and node.attrs.content.rowLabels else none -%}
 {%- if rows|length == 0 -%}
 No content found
 {%- else -%}
@@ -77,6 +82,9 @@ No content found
     {%- endif -%}
     <table class="dynamic-table" style="{{ table_width_css }}">
         <colgroup>
+            {%- if row_labels -%}
+            <col>
+            {%- endif -%}
             {%- for header, props in sorted_columns -%}
             {%- if use_percentages and pct_ns.total > 0 -%}
             <col
@@ -90,6 +98,9 @@ No content found
         </colgroup>
         <thead>
             <tr>
+                {%- if row_labels -%}
+                <th style="font-size: {{ column_font_size }}"></th>
+                {%- endif -%}
                 {%- for header, props in sorted_columns -%}
                 {% set header_text = props.alias if props.alias else props.originalName|default(header) %}
                 {% set header_text = header_text | to_traced_display_label %}
@@ -108,12 +119,31 @@ No content found
         <tbody>
             {%- for row in rows -%}
             <tr>
+                {%- if row_labels -%}
+                <th style="font-size: {{ row_font_size }}">{{ (row_labels[loop.index0] if loop.index0 < row_labels|length else '') | safe_html }}</th>
+                {%- endif -%}
                 {%- for header, props in sorted_columns -%}
                 {%- if header in node.attrs.content.headers -%}
                 {% set cell_index = node.attrs.content.headers.index(header) %}
-                {% set ns = namespace(text=row[cell_index]) %}
+                {% set cell = row[cell_index] %}
+                {%- if cell is mapping -%}
+                {# A matrix cell ({value, color, riskRecordIds}) — see MatrixDataTransformer
+                   (Document) / matrixGridUtils.ts (Frontend). Detected by shape, same as
+                   everywhere else in this feature; node.attrs.type stays "list".
+                   padding:0 + centered text mirrors the Frontend's edge-to-edge colored
+                   Box (matrixGridUtils.ts/DynamicTableRenderer.tsx's ".matrix-cell" rule) —
+                   the shared .dynamic-table td rule (8px padding, vertical-align: top) is
+                   right for an ordinary table but leaves a visible gap around a color fill,
+                   so matrix cells override it inline; nothing else changes for them. #}
+                {% set ns = namespace(text=cell.value) %}
+                {% set cell_style = 'font-size: ' + row_font_size + '; padding: 0; text-align: center; vertical-align: middle;' + ((' background-color: ' + cell.color + ';') if cell.color else '') %}
+                {%- else -%}
+                {% set ns = namespace(text=cell) %}
+                {% set cell_style = 'font-size: ' + row_font_size %}
+                {%- endif -%}
                 {%- else -%}
                 {% set ns = namespace(text='') %}
+                {% set cell_style = 'font-size: ' + row_font_size %}
                 {%- endif -%}
                 {%- for mark in node.marks if node.marks -%}
                 {%- set ns.text -%}
@@ -122,7 +152,7 @@ No content found
                 {%- endwith -%}
                 {%- endset -%}
                 {%- endfor -%}
-                <td style="font-size: {{ row_font_size }}">{{ns.text | safe_html }}</td>
+                <td style="{{ cell_style }}">{{ns.text | safe_html }}</td>
                 {%- endfor -%}
             </tr>
             {%- endfor -%}
