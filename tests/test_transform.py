@@ -46,6 +46,7 @@ tags_to_test = (
     # "data_attributes",
     # "xss",
     "dynamic_table",
+    "dynamic_table_dup_labels",
     "risk_matrix",
     "table",
     "date",

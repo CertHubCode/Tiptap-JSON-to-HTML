@@ -17,6 +17,10 @@ else {} -%}
    matrixGridUtils.ts (Frontend). Detected by this field's presence, same as
    everywhere else; node.attrs.type stays "list" for this content too. -#}
 {%- set row_labels = node.attrs.content.rowLabels if node.attrs.content and node.attrs.content.rowLabels else none -%}
+{#- {key, label} per BPMN-form column (see TableDataTransformer, Document). A column's
+   `key` is its `content.headers` identity; `label` is the header text and differs from the
+   key only for a duplicate label. Absent for legacy content, where the header IS the label. -#}
+{%- set column_defs = node.attrs.content.columns if node.attrs.content and node.attrs.content.columns else [] -%}
 {%- if rows|length == 0 -%}
 No content found
 {%- else -%}
@@ -102,7 +106,9 @@ No content found
                 <th style="font-size: {{ column_font_size }}"></th>
                 {%- endif -%}
                 {%- for header, props in sorted_columns -%}
-                {% set header_text = props.alias if props.alias else props.originalName|default(header) %}
+                {%- set matched_defs = (column_defs | selectattr('key', 'equalto', header) | list) if column_defs else [] -%}
+                {%- set column_label = matched_defs[0].label if matched_defs and matched_defs[0].label else none -%}
+                {% set header_text = props.alias if props.alias else (column_label if column_label else props.originalName|default(header)) %}
                 {% set header_text = header_text | to_traced_display_label %}
                 {% set ns = namespace(text=header_text) %}
                 {%- for mark in node.marks if node.marks -%}

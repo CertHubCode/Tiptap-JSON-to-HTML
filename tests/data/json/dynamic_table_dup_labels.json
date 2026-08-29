@@ -1,0 +1,49 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "dynamicTable",
+      "attrs": {
+        "path": ["root", "qms", "kt"],
+        "displayPath": ["Root", "QMS", "KT"],
+        "type": "list",
+        "columns": {
+          "Temperature": {
+            "originalName": "Temperature",
+            "alias": null,
+            "visible": true,
+            "order": 0,
+            "width": null
+          },
+          "temp_core": {
+            "originalName": "temp_core",
+            "alias": null,
+            "visible": true,
+            "order": 1,
+            "width": null
+          },
+          "Notes": {
+            "originalName": "Notes",
+            "alias": null,
+            "visible": true,
+            "order": 2,
+            "width": null
+          }
+        },
+        "content": {
+          "headers": ["Temperature", "temp_core", "Notes"],
+          "columns": [
+            { "key": "Temperature", "label": "Temperature" },
+            { "key": "temp_core", "label": "Temperature" },
+            { "key": "Notes", "label": "Notes" }
+          ],
+          "rows": [
+            ["20", "37", "ambient vs core"],
+            ["21", "38", "post-run"]
+          ]
+        },
+        "lastUpdated": null
+      }
+    }
+  ]
+}
