@@ -1,0 +1,7 @@
+<div class="details-summary" style="font-weight: 600; margin-bottom: 4px;">
+{%- for item in node.content -%}
+  {%- with template=item.type + '.html', node=item -%}
+    {%- include template -%}
+  {%- endwith -%}
+{%- endfor -%}
+</div>

@@ -58,6 +58,11 @@ tags_to_test = (
     "selectField",
     "radioField",
     "checkboxGroup",
+    "details",
+    "page_break",
+    "math",
+    "note_references",
+    "ordered_list_type",
 )
 
 class config:

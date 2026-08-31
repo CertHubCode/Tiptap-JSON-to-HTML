@@ -1,0 +1,26 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Energy: "
+        },
+        {
+          "type": "inlineMath",
+          "attrs": {
+            "latex": "e = mc^2"
+          }
+        }
+      ]
+    },
+    {
+      "type": "blockMath",
+      "attrs": {
+        "latex": "\\sum_{i=1}^{n} x_i"
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{#- Collapsible section (accordion). Rendered expanded: a closed <details>
+    would hide its content in print/PDF output. -#}
+<div class="details" style="border: 1px solid #ddd; border-radius: 6px; padding: 8px; margin: 8px 0;">
+{%- for item in node.content -%}
+  {%- with template=item.type + '.html', node=item -%}
+    {%- include template -%}
+  {%- endwith -%}
+{%- endfor -%}
+</div>
