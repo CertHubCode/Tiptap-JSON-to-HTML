@@ -64,6 +64,7 @@ tags_to_test = (
     "math",
     "note_references",
     "ordered_list_type",
+    "table_of_contents",
 )
 
 class config:

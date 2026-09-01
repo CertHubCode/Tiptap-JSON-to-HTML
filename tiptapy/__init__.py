@@ -60,6 +60,42 @@ def _get_abs_template_path(path_str):
     return os.path.join(pkg_dir, path_str)
 
 
+def collect_toc_entries(node):
+    """Headings of the document with hierarchical numbering (1, 1.1, 1.2, 2 ...),
+    for the insertable table-of-contents node."""
+    entries = []
+    counters = []
+
+    def text_of(item):
+        if not isinstance(item, dict):
+            return ""
+        if item.get("type") == "text":
+            return item.get("text", "")
+        return "".join(text_of(child) for child in item.get("content") or [])
+
+    def walk(item):
+        if not isinstance(item, dict):
+            return
+        if item.get("type") == "heading":
+            level = int((item.get("attrs") or {}).get("level") or 1)
+            while len(counters) < level:
+                counters.append(0)
+            del counters[level:]
+            counters[level - 1] += 1
+            entries.append(
+                {
+                    "level": level,
+                    "index": ".".join(str(count) for count in counters),
+                    "text": text_of(item),
+                }
+            )
+        for child in item.get("content") or []:
+            walk(child)
+
+    walk(node)
+    return entries
+
+
 def escape_values_recursive(node):
     # Skip the html key in the node, as it is used to render the html
     # and should not be escaped. Users should clean the html before
@@ -103,4 +139,8 @@ class BaseDoc:
         # nested per-node-type templates (e.g. dynamicTable.html) can size
         # themselves against the page's actual orientation without every
         # intermediate template having to thread it through explicitly.
-        return self.t.render(node=node, page_orientation=page_orientation or "portrait")
+        return self.t.render(
+            node=node,
+            page_orientation=page_orientation or "portrait",
+            toc_entries=collect_toc_entries(node),
+        )
