@@ -1,0 +1,28 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Before " },
+        {
+          "type": "customImage",
+          "attrs": {
+            "id": "6aabd068f3f51d2d91f65117",
+            "src": "https://assets.example.com/assets/images/download/6aabd068f3f51d2d91f65117",
+            "alt": "Device",
+            "width": 320,
+            "height": 200,
+            "data-align": "center",
+            "showCaption": true
+          },
+          "content": [
+            { "type": "text", "text": "Figure 1: the " },
+            { "type": "text", "text": "device", "marks": [{ "type": "bold" }] }
+          ]
+        },
+        { "type": "text", "text": " after" }
+      ]
+    }
+  ]
+}

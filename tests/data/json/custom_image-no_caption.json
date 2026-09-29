@@ -1,0 +1,21 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "customImage",
+          "attrs": {
+            "src": "https://assets.example.com/assets/images/download/6aabd068f3f51d2d91f65117",
+            "alt": "Device",
+            "width": 320,
+            "height": 200,
+            "data-align": "right",
+            "showCaption": false
+          }
+        }
+      ]
+    }
+  ]
+}
