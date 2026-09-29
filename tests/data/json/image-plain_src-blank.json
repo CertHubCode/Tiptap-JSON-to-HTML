@@ -1,0 +1,7 @@
+{
+  "type": "doc",
+  "content": [
+    { "type": "image", "attrs": { "src": "  ", "alt": "Nothing" } },
+    { "type": "paragraph", "content": [{ "type": "text", "text": "Quality Manual" }] }
+  ]
+}

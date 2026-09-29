@@ -16,11 +16,29 @@ def extract_tag_attrs(node):
     )
 
 
+def image_src_url(src):
+    """The URL of an image node's ``src``.
+
+    The original tiptapy image node stores ``src`` as ``{"image", "fallback"}``;
+    Tiptap's stock ``image`` node (what the editor's page header/footer uses
+    for a logo) stores a plain URL string.
+    """
+    if isinstance(src, dict):
+        return (src.get("fallback") or "").strip()
+    if isinstance(src, str):
+        return src.strip()
+    return ""
+
+
 def make_img_src(attrs):
-    alt = attrs.get("alt", "").strip()
+    alt = (attrs.get("alt") or "").strip()
     height = attrs.get("height", "")
     width = attrs.get("width", "")
-    fallback_url = attrs["src"]["fallback"].strip()
+    # The stock image node carries the toolbar alignment as `textAlign`
+    # (rendered as `data-align` in the editor, so the print CSS can place a
+    # left/right-aligned logo the same way).
+    align = (attrs.get("textAlign") or "").strip()
+    fallback_url = image_src_url(attrs.get("src"))
     img = f'img src="{fallback_url}"'
     if alt:
         img += f' alt="{alt}"'
@@ -28,6 +46,8 @@ def make_img_src(attrs):
         img += f' width="{width}"'
     if height:
         img += f' height="{height}"'
+    if align:
+        img += f' data-align="{align}"'
 
     return img
 

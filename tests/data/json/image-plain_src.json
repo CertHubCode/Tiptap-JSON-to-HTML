@@ -1,0 +1,20 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "image",
+      "attrs": {
+        "src": "https://assets.example.com/assets/images/download/abc123",
+        "alt": "Company logo",
+        "title": null,
+        "width": 480,
+        "height": 120,
+        "textAlign": "right"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "text", "text": "Quality Manual" }]
+    }
+  ]
+}
