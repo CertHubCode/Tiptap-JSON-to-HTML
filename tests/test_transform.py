@@ -23,6 +23,8 @@ tags_to_test = (
     "image-height_width",
     "image-plain_src",
     "image-plain_src-blank",
+    "custom_image",
+    "custom_image-no_caption",
     "featuredimage",
     "featuredimage-is_renderable",
     "featuredimage-missing_caption",

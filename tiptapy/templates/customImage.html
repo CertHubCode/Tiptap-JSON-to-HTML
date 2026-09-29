@@ -1,4 +1,26 @@
-{%- if node.attrs.src -%} {%- set alt = node.attrs.alt|trim -%} {%- set image_url = node.attrs.src|trim -%} {%- if
-image_url -%}
-<img src="{{ image_url }}" style="width:{{node.attrs.width}}px;height:auto;max-width:595px;" />
-{%- endif -%} {%- endif -%}
+{#- The editor's own image node (CustomImageExtension): an INLINE node whose
+    `src` is the asset download URL and whose CONTENT is the caption. With a
+    caption it becomes an inline-block figure (a <figure> would break the
+    paragraph the image sits in), the caption under the picture; the editor's
+    `data-align` is carried over for the print CSS (CU-123z74bxdrz). -#}
+{%- if node.attrs.src -%}
+  {%- set image_url = node.attrs.src|trim -%}
+  {%- if image_url -%}
+    {%- set align = node.attrs['data-align'] -%}
+    {%- set width = node.attrs.width -%}
+    {%- set alt = (node.attrs.alt or '')|trim -%}
+    {%- set has_caption = node.content and node.content|length > 0 -%}
+    {%- set img -%}<img src="{{ image_url }}"{% if alt %} alt="{{ alt }}"{% endif %} style="{% if width %}width:{{ width }}px;{% endif %}height:auto;max-width:595px;"{% if align and not has_caption %} data-align="{{ align }}"{% endif %}/>{%- endset -%}
+    {%- if has_caption -%}
+      <span class="custom-image"{% if align %} data-align="{{ align }}"{% endif %}>{{ img }}<span class="custom-image-caption">
+        {%- for item in node.content -%}
+          {%- with template=item.type + '.html', node=item -%}
+            {%- include template -%}
+          {%- endwith -%}
+        {%- endfor -%}
+      </span></span>
+    {%- else -%}
+      {{ img }}
+    {%- endif -%}
+  {%- endif -%}
+{%- endif -%}
