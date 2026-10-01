@@ -37,6 +37,7 @@ tags_to_test = (
     "embed-no_caption",
     "embed-null_caption",
     "heading",
+    "heading-align",
     "is_renderable",
     "code_block",
     "code_block-is_renderable",
