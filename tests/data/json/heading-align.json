@@ -1,0 +1,25 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1, "textAlign": "center" },
+      "content": [{ "type": "text", "text": "Centred title" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2, "textAlign": "right" },
+      "content": [{ "type": "text", "text": "Right heading" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3, "textAlign": "left" },
+      "content": [{ "type": "text", "text": "Left heading" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Unaligned heading" }]
+    }
+  ]
+}

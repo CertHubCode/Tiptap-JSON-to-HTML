@@ -2,7 +2,10 @@
     `src` is the asset download URL and whose CONTENT is the caption. With a
     caption it becomes an inline-block figure (a <figure> would break the
     paragraph the image sits in), the caption under the picture; the editor's
-    `data-align` is carried over for the print CSS (CU-123z74bxdrz). -#}
+    `data-align` is carried over for the print CSS (CU-123z74bxdrz). The
+    editor shows every image on a full-width row of its own with 24px above
+    and below, so the node is wrapped in a `.custom-image-row` span that the
+    print CSS lays out the same way (CU-123z74bynqq). -#}
 {%- if node.attrs.src -%}
   {%- set image_url = node.attrs.src|trim -%}
   {%- if image_url -%}
@@ -10,7 +13,8 @@
     {%- set width = node.attrs.width -%}
     {%- set alt = (node.attrs.alt or '')|trim -%}
     {%- set has_caption = node.content and node.content|length > 0 -%}
-    {%- set img -%}<img src="{{ image_url }}"{% if alt %} alt="{{ alt }}"{% endif %} style="{% if width %}width:{{ width }}px;{% endif %}height:auto;max-width:595px;"{% if align and not has_caption %} data-align="{{ align }}"{% endif %}/>{%- endset -%}
+    {%- set img -%}<img src="{{ image_url }}"{% if alt %} alt="{{ alt }}"{% endif %} style="{% if width %}width:{{ width }}px;{% endif %}height:auto;max-width:100%;"{% if align and not has_caption %} data-align="{{ align }}"{% endif %}/>{%- endset -%}
+    <span class="custom-image-row"{% if align %} data-align="{{ align }}"{% endif %}>
     {%- if has_caption -%}
       <span class="custom-image"{% if align %} data-align="{{ align }}"{% endif %}>{{ img }}<span class="custom-image-caption">
         {%- for item in node.content -%}
@@ -22,5 +26,6 @@
     {%- else -%}
       {{ img }}
     {%- endif -%}
+    </span>
   {%- endif -%}
 {%- endif -%}
