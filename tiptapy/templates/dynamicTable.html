@@ -1,5 +1,17 @@
 {%- set MAX_TABLE_WIDTH = 970 if page_orientation == 'landscape' else 670 -%}
-{%- set FLEX_COL_WEIGHT = 25 -%}
+{#- An unsized column renders at the DataGrid's default 100px in the editor, so it
+   weighs the same here when the table overflows and every column becomes a percentage. -#}
+{%- set FLEX_COL_WEIGHT = 100 -%}
+{#- Column visibility mirrors the editor grid (DynamicTableRenderer.tsx gridInitialState,
+   gridStateUtils.ts column hiders, useTableData.ts): Created At (CREATED_AT_COLUMN_FIELD)
+   shows only when attrs.columns marks it visible and gridState's columnVisibilityModel
+   does not hide it; otherwise the model decides, and without an entry Id/Linked*
+   (LINKED_ENTITY_HIDDEN_COLUMNS in constants.ts — keep in sync, lower-cased) start hidden.
+   GlobalElement tables never render their dead "Linked Global Elements" column
+   (DEAD_LINKED_ENTITY_COLUMNS_BY_ENTITY_TYPE). -#}
+{%- set CREATED_AT_FIELD = 'Created At' -%}
+{%- set HIDDEN_BY_DEFAULT_COLUMNS = ['id', 'linked documents', 'linked global element entries', 'linked files'] -%}
+{%- set DEAD_COLUMNS = ['linked global elements'] if node.attrs.entity_type == 'GlobalElement' else [] -%}
 {%- set visible_columns = [] -%}
 {%- set rows = node.attrs.content.rows if node.attrs.content and node.attrs.content.rows is iterable and
 node.attrs.content.rows is not string else [] -%}
@@ -25,12 +37,28 @@ else {} -%}
 No content found
 {%- else -%}
 {%- if node.attrs.content and node.attrs.content.headers -%}
+{%- set visible_headers = [] -%}
+{%- for header in node.attrs.content.headers -%}
+{%- set props = configured_columns.get(header, {}) -%}
+{%- if header|lower in DEAD_COLUMNS -%}
+{%- set is_visible = false -%}
+{%- elif header == CREATED_AT_FIELD -%}
+{%- set is_visible = props.visible is true and visibility_model.get(header) is not false -%}
+{%- elif header in visibility_model -%}
+{%- set is_visible = visibility_model[header] -%}
+{%- else -%}
+{%- set is_visible = false if header|lower in HIDDEN_BY_DEFAULT_COLUMNS
+else (props.visible if props.visible is defined else true) -%}
+{%- endif -%}
+{%- if is_visible -%}
+{%- set _ = visible_headers.append(header) -%}
+{%- endif -%}
+{%- endfor -%}
 {%- for header in ordered_fields -%}
 {%- if header in node.attrs.content.headers -%}
 {%- set props = configured_columns.get(header, {}) -%}
 {%- set dim_width = grid_dimensions.get(header, {}).get('width') if grid_dimensions else none -%}
-{%- set is_visible = props.visible if props.visible is defined else visibility_model.get(header, True) -%}
-{%- if is_visible -%}
+{%- if header in visible_headers -%}
 {%- set col_w = props.width if props.width else dim_width -%}
 {%- set _ = visible_columns.append((header, {
 "originalName": props.originalName|default(header),
@@ -46,8 +74,7 @@ No content found
 {%- if header not in ordered_fields -%}
 {%- set props = configured_columns.get(header, {}) -%}
 {%- set dim_width = grid_dimensions.get(header, {}).get('width') if grid_dimensions else none -%}
-{%- set is_visible = props.visible if props.visible is defined else visibility_model.get(header, True) -%}
-{%- if is_visible -%}
+{%- if header in visible_headers -%}
 {%- set col_w = props.width if props.width else dim_width -%}
 {%- set _ = visible_columns.append((header, {
 "originalName": props.originalName|default(header),
