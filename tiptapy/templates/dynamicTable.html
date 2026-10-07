@@ -1,6 +1,8 @@
 {%- set MAX_TABLE_WIDTH = 970 if page_orientation == 'landscape' else 670 -%}
-{#- An unsized column renders at the DataGrid's default 100px in the editor. -#}
+{#- The DataGrid's column defaults in the editor: an unsized column renders at 100px, and
+   none renders (or resizes) narrower than its 50px minWidth. -#}
 {%- set DEFAULT_COL_WIDTH = 100 -%}
+{%- set MIN_COL_WIDTH = 50 -%}
 {%- set visible_columns = [] -%}
 {%- set rows = node.attrs.content.rows if node.attrs.content and node.attrs.content.rows is iterable and
 node.attrs.content.rows is not string else [] -%}
@@ -62,16 +64,20 @@ No content found
 {%- endfor -%}
 {%- endif -%}
 {%- set sorted_columns = visible_columns|sort(attribute='1.order') -%}
-{#- Every column is as wide as in the editor: its saved width, else DEFAULT_COL_WIDTH. A
-   table that fits the page keeps those widths; a wider one, which the editor clips at the
-   page edge, is scaled down to the page width with the same proportions instead. A matrix
-   fills the width, as its cell columns flex in the editor (matrixGridUtils.ts). -#}
+{#- Every column is as wide as in the editor: its saved width, else DEFAULT_COL_WIDTH, and
+   at least MIN_COL_WIDTH. A table that fits the page keeps those widths; a wider one,
+   which the editor clips at the page edge, is scaled down to the page width instead,
+   still keeping MIN_COL_WIDTH where it fits (fit_column_widths). A matrix fills the
+   width, as its cell columns flex in the editor (matrixGridUtils.ts). -#}
 {%- set col_widths = [] -%}
 {%- for header, props in sorted_columns -%}
-{%- set _ = col_widths.append(props.width or DEFAULT_COL_WIDTH) -%}
+{%- set _ = col_widths.append([props.width or DEFAULT_COL_WIDTH, MIN_COL_WIDTH]|max) -%}
 {%- endfor -%}
 {%- set total_width = col_widths|sum -%}
 {%- set overflows = total_width > MAX_TABLE_WIDTH -%}
+{%- if overflows -%}
+{%- set col_widths = col_widths|fit_column_widths(MAX_TABLE_WIDTH, MIN_COL_WIDTH) -%}
+{%- endif -%}
     <table class="dynamic-table" style="width: {{ '100%' if overflows or row_labels else total_width ~ 'px' }}; max-width: 100%; table-layout: fixed;">
         <colgroup>
             {%- if row_labels -%}
@@ -81,7 +87,7 @@ No content found
             {%- else -%}
             {%- for width in col_widths -%}
             {%- if overflows -%}
-            <col style="width: {{ (width / total_width * 100)|round(4) }}%">
+            <col style="width: {{ (width / MAX_TABLE_WIDTH * 100)|round(4) }}%">
             {%- else -%}
             <col style="width: {{ width }}px">
             {%- endif -%}

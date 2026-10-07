@@ -62,9 +62,29 @@ class TestTableColumnWidths:
 
         rendered_html = self.doc.render(data)
 
-        assert '<colgroup><col><col style="width: 136px"></colgroup>' in rendered_html
-        assert 'width: 100%' in rendered_html
+        # The unsized column takes the editor's default 120px instead of stretching the table.
+        assert '<colgroup><col style="width: 120px"><col style="width: 136px"></colgroup>' in rendered_html
+        assert 'width: 256px' in rendered_html
         assert 'table-layout: fixed' in rendered_html
+
+    def test_blank_table_is_as_wide_as_in_the_editor_not_the_page(self):
+        data = _table_doc(header_cells=[_cell("tableHeader", "")], body_cells=[_cell("tableCell", "")])
+
+        rendered_html = self.doc.render(data)
+
+        assert '<colgroup><col style="width: 120px"></colgroup>' in rendered_html
+        assert 'width: 120px' in rendered_html
+
+    def test_scaled_column_is_held_at_the_resize_minimum(self):
+        data = _table_doc(
+            header_cells=[_cell("tableHeader", "A", colwidth=[660]), _cell("tableHeader", "B", colwidth=[35])],
+            body_cells=[_cell("tableCell", "a1"), _cell("tableCell", "b1")],
+        )
+
+        rendered_html = self.doc.render(data)
+
+        # Plain scaling would make B 33.7px; it stays 35 of 670 and A takes the other 635.
+        assert '<colgroup><col style="width: 94.7761%"><col style="width: 5.2239%"></colgroup>' in rendered_html
 
     def test_all_defined_but_overflowing_converts_to_percentages(self):
         data = _table_doc(
