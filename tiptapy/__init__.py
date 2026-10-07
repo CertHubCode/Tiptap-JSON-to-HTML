@@ -14,6 +14,7 @@ from .macros import (
     extract_tag_attrs,
 )
 from .jinja_filters import (
+    fit_column_widths_filter,
     markdown_filter,
     safe_html_filter,
     to_traced_display_label_filter,
@@ -44,6 +45,7 @@ def init_env(path, config):
     env.filters["safe_html"] = safe_html_filter
     env.filters["to_traced_display_label"] = to_traced_display_label_filter
     env.filters["markdown"] = markdown_filter
+    env.filters["fit_column_widths"] = fit_column_widths_filter
 
     return env
 

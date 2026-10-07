@@ -1,57 +1,90 @@
-{%- set nested_ns = namespace(found=False) -%}
+{%- set MAX_TABLE_WIDTH = 970 if page_orientation == 'landscape' else 670 -%}
+{#- The editor's table defaults (tiptap-table-utils.ts, Frontend): a column without a
+   `colwidth` renders at EMPTY_CELL_WIDTH (120px), and none resizes narrower than
+   RESIZE_MIN_WIDTH (35px). Neither is stored in the document. -#}
+{%- set DEFAULT_COL_WIDTH = 120 -%}
+{%- set MIN_COL_WIDTH = 35 -%}
+{#- Columns (by index, colspans expanded) that hold a nested table/dynamicTable. -#}
+{%- set nested_cols = [] -%}
 {%- for row in node.content -%}
+{%- set pos = namespace(index=0) -%}
 {%- for cell in row.content -%}
+{%- set span = cell.attrs.colspan if cell.attrs.colspan else 1 -%}
 {%- for content in cell.content -%}
 {%- if content.type in ('table', 'dynamicTable', 'dynamic_table') -%}
-{%- set nested_ns.found = True -%}
+{%- for i in range(span) -%}
+{%- set _ = nested_cols.append(pos.index + i) -%}
+{%- endfor -%}
 {%- endif -%}
 {%- endfor -%}
+{%- set pos.index = pos.index + span -%}
 {%- endfor -%}
 {%- endfor -%}
-{%- if not nested_ns.found -%}
-{%- set MAX_TABLE_WIDTH = 970 if page_orientation == 'landscape' else 670 -%}
-{%- set FLEX_COL_WEIGHT = 25 -%}
 {%- set header_row = node.content[0] if node.content else none -%}
-{%- set col_ns = namespace(widths=[], total=0, defined_count=0, count=0) -%}
+{%- set col_widths = [] -%}
 {%- if header_row and header_row.content -%}
 {%- for cell in header_row.content -%}
 {%- set span = cell.attrs.colspan if cell.attrs.colspan else 1 -%}
 {%- set cw = cell.attrs.colwidth if cell.attrs.colwidth else [] -%}
 {%- for i in range(span) -%}
-{%- set w = cw[i] if cw and i < cw|length and cw[i] else none -%}
-{%- set col_ns.widths = col_ns.widths + [w] -%}
-{%- set col_ns.count = col_ns.count + 1 -%}
-{%- if w -%}
-{%- set col_ns.total = col_ns.total + w -%}
-{%- set col_ns.defined_count = col_ns.defined_count + 1 -%}
-{%- endif -%}
+{%- set w = cw[i] if cw and i < cw|length and cw[i] else DEFAULT_COL_WIDTH -%}
+{%- set _ = col_widths.append([w, MIN_COL_WIDTH]|max) -%}
 {%- endfor -%}
 {%- endfor -%}
 {%- endif -%}
-{%- set has_missing = col_ns.count == 0 or col_ns.defined_count < col_ns.count -%}
-{%- set all_defined = col_ns.count > 0 and col_ns.defined_count == col_ns.count and col_ns.total > 0 -%}
-{%- set overflows = col_ns.total > MAX_TABLE_WIDTH -%}
-{%- if has_missing or (all_defined and overflows) or col_ns.count == 0 -%}
-{%- set table_width_css = 'width: 100%; max-width: 100%; table-layout: fixed;' -%}
+{#- Column widths as `<col>` CSS (none = take what the others leave), and the table's width.
+   - Inside a table cell (`in_table_cell`): fill the cell, in the editor's proportions —
+     the page width means nothing there.
+   - Holding a nested table: fill the page. Columns with a nested table share what the
+     others leave instead of keeping a `colwidth`, which a large nested table may not fit.
+   - Otherwise as wide as in the editor; a table wider than the page is scaled down to
+     it, keeping MIN_COL_WIDTH where it fits (fit_column_widths).
+   Table layout is fixed throughout, so no content can widen a table past its box. -#}
+{%- set col_css = [] -%}
+{%- set total_width = col_widths|sum -%}
+{%- if in_table_cell or nested_cols or total_width > MAX_TABLE_WIDTH -%}
+{%- set table_width = '100%' -%}
+{%- if in_table_cell -%}
+{%- for w in col_widths -%}
+{%- set _ = col_css.append((w / total_width * 100)|round(4) ~ '%') -%}
+{%- endfor -%}
+{%- elif nested_cols -%}
+{%- set sized = namespace(widths=[], nested=0) -%}
+{%- for w in col_widths -%}
+{%- if loop.index0 in nested_cols -%}
+{%- set sized.nested = sized.nested + 1 -%}
 {%- else -%}
-{%- set table_width_css = 'width: ' ~ col_ns.total ~ 'px; max-width: 100%; table-layout: fixed;' -%}
+{%- set sized.widths = sized.widths + [w] -%}
 {%- endif -%}
-{%- set use_percentages = overflows -%}
-{%- set pct_ns = namespace(total=0) -%}
-{%- if use_percentages -%}
-{%- for w in col_ns.widths -%}
-{%- set pct_ns.total = pct_ns.total + (w if w else FLEX_COL_WEIGHT) -%}
+{%- endfor -%}
+{%- set budget = [MAX_TABLE_WIDTH - DEFAULT_COL_WIDTH * sized.nested, MIN_COL_WIDTH * sized.widths|length]|max -%}
+{%- set fitted = sized.widths|fit_column_widths(budget, MIN_COL_WIDTH) if sized.widths|sum > budget else sized.widths -%}
+{%- set k = namespace(i=0) -%}
+{%- for w in col_widths -%}
+{%- if loop.index0 in nested_cols -%}
+{%- set _ = col_css.append(none) -%}
+{%- else -%}
+{%- set _ = col_css.append((fitted[k.i] / MAX_TABLE_WIDTH * 100)|round(4) ~ '%') -%}
+{%- set k.i = k.i + 1 -%}
+{%- endif -%}
+{%- endfor -%}
+{%- else -%}
+{%- for w in col_widths|fit_column_widths(MAX_TABLE_WIDTH, MIN_COL_WIDTH) -%}
+{%- set _ = col_css.append((w / MAX_TABLE_WIDTH * 100)|round(4) ~ '%') -%}
 {%- endfor -%}
 {%- endif -%}
+{%- else -%}
+{%- set table_width = (total_width ~ 'px') if col_widths else '100%' -%}
+{%- for w in col_widths -%}
+{%- set _ = col_css.append(w ~ 'px') -%}
+{%- endfor -%}
 {%- endif -%}
-<table class="basic-table"{% if not nested_ns.found %} style="{{ table_width_css }}"{% endif %}>
-    {%- if not nested_ns.found and col_ns.widths -%}
+<table class="basic-table" style="width: {{ table_width }}; max-width: 100%; table-layout: fixed;">
+    {%- if col_css -%}
     <colgroup>
-        {%- for w in col_ns.widths -%}
-        {%- if use_percentages and pct_ns.total > 0 -%}
-        <col style="width: {{ ((w if w else FLEX_COL_WEIGHT) / pct_ns.total * 100)|round(4) }}%">
-        {%- elif w -%}
-        <col style="width: {{ w }}px">
+        {%- for css in col_css -%}
+        {%- if css -%}
+        <col style="width: {{ css }}">
         {%- else -%}
         <col>
         {%- endif -%}
@@ -64,7 +97,7 @@
         {%- if cell.type == 'tableHeader' -%}
         <th {% if cell.attrs.colspan and cell.attrs.colspan> 1 %}colspan="{{ cell.attrs.colspan }}"{% endif %}>
             {%- for content in cell.content -%}
-            {%- with template=content.type + '.html', node=content -%}
+            {%- with template=content.type + '.html', node=content, in_table_cell=True -%}
             {%- include template -%}
             {%- endwith -%}
             {%- endfor %}
@@ -72,7 +105,7 @@
         {%- else -%}
         <td {% if cell.attrs.colspan and cell.attrs.colspan> 1 %}colspan="{{ cell.attrs.colspan }}"{% endif %}>
             {%- for content in cell.content -%}
-            {%- with template=content.type + '.html', node=content -%}
+            {%- with template=content.type + '.html', node=content, in_table_cell=True -%}
             {%- include template -%}
             {%- endwith -%}
             {%- endfor %}
