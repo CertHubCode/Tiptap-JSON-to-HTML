@@ -1,0 +1,77 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "dynamicTable",
+      "attrs": {
+        "path": [
+          "Traceability Matrix"
+        ],
+        "displayPath": [
+          "Traceability Matrix"
+        ],
+        "type": "list",
+        "columns": {},
+        "content": {
+          "kind": "traceability",
+          "headers": [
+            "User Requirements",
+            "System Requirements",
+            "Verification",
+            "Validation"
+          ],
+          "rows": [
+            [
+              "UR-1",
+              "SR-1",
+              "V-1\nV-2",
+              "VAL-1"
+            ],
+            [
+              "UR-1",
+              "SR-2",
+              "V-3\nV-4",
+              "VAL-1"
+            ],
+            [
+              "UR-2",
+              "SR-3",
+              "—",
+              "VAL-2"
+            ]
+          ],
+          "continuations": [
+            [
+              false,
+              false,
+              false,
+              false
+            ],
+            [
+              true,
+              false,
+              false,
+              true
+            ],
+            [
+              false,
+              false,
+              false,
+              false
+            ]
+          ],
+          "groupIndexes": [
+            0,
+            0,
+            1
+          ]
+        },
+        "gridState": {},
+        "tableSettings": {
+          "columnFontSize": "12px",
+          "rowFontSize": "12px"
+        }
+      }
+    }
+  ]
+}
