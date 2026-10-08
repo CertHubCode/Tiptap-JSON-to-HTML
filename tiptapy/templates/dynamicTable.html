@@ -40,7 +40,8 @@ No content found
 "alias": props.alias|default(None),
 "visible": True,
 "order": props.order|default(loop.index0),
-"width": col_w|int if col_w else none
+"width": col_w|int if col_w else none,
+"cell_index": node.attrs.content.headers.index(header)
 })) -%}
 {%- endif -%}
 {%- endif -%}
@@ -57,7 +58,8 @@ No content found
 "alias": props.alias|default(None),
 "visible": True,
 "order": props.order|default(visible_columns|length),
-"width": col_w|int if col_w else none
+"width": col_w|int if col_w else none,
+"cell_index": loop.index0
 })) -%}
 {%- endif -%}
 {%- endif -%}
@@ -126,8 +128,15 @@ No content found
                 <th style="font-size: {{ row_font_size }}">{{ (row_labels[loop.index0] if loop.index0 < row_labels|length else '') | safe_html }}</th>
                 {%- endif -%}
                 {%- for header, props in sorted_columns -%}
-                {%- if header in node.attrs.content.headers -%}
-                {% set cell_index = node.attrs.content.headers.index(header) %}
+                {#- Cells are resolved by the column's own position, carried as `cell_index`
+                    when the column was collected above. `headers.index(header)` would return
+                    the FIRST match, so two axis entries sharing a label (severity labels are
+                    user-authored and not unique -- TechDoc keys its axis on record_id, which
+                    MatrixDataTransformer drops) rendered the same cell twice and lost the
+                    other. Frontend keys matrix columns positionally for the same reason --
+                    see matrixGridUtils.ts::matrixColumnField. -#}
+                {%- if props.cell_index is defined and props.cell_index < row|length -%}
+                {% set cell_index = props.cell_index %}
                 {% set cell = row[cell_index] %}
                 {%- if cell is mapping -%}
                 {# A matrix cell ({value, color, riskRecordIds}) — see MatrixDataTransformer
