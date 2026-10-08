@@ -1,0 +1,22 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "dynamicTable",
+      "attrs": {
+        "path": ["Traceability Matrix"],
+        "displayPath": ["Traceability Matrix"],
+        "type": "list",
+        "columns": {},
+        "content": {
+          "kind": "traceability",
+          "headers": ["User Requirements", "System Requirements", "Verification", "Validation"],
+          "rows": [],
+          "caption": "No traced requirements found in this knowledge unit."
+        },
+        "gridState": {},
+        "tableSettings": {"columnFontSize": "12px", "rowFontSize": "12px"}
+      }
+    }
+  ]
+}

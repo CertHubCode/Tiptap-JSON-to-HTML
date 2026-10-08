@@ -24,7 +24,24 @@ else {} -%}
    `key` is its `content.headers` identity; `label` is the header text and differs from the
    key only for a duplicate label. Absent for legacy content, where the header IS the label. -#}
 {%- set column_defs = node.attrs.content.columns if node.attrs.content and node.attrs.content.columns else [] -%}
-{%- if rows|length == 0 -%}
+{#- Optional caption under the table (e.g. a traceability matrix with no traced
+   requirements). Generic: any dynamicTable content may carry it. With a caption, an
+   empty table still renders its header row instead of "No content found". -#}
+{%- set caption = node.attrs.content.caption if node.attrs.content and node.attrs.content.caption else none -%}
+{#- Grouped ("fake-merge") rendering, e.g. a traceability matrix whose chains share a
+   parent requirement. `continuations` is aligned with `rows` (one bool list per row,
+   indexed like the row's cells): true = the cell continues the group above, so it
+   renders blank (the string in `rows` keeps the real value for export/copy). One
+   `groupIndexes` entry per row; rows of an odd group get a striped background. Only
+   honoured when aligned with `rows` -- otherwise the table renders exactly as without.
+   Class names are shared with the Frontend editor's renderer. -#}
+{%- set content_continuations = node.attrs.content.continuations if node.attrs.content and node.attrs.content.continuations is iterable and node.attrs.content.continuations is not string and node.attrs.content.continuations is not mapping else none -%}
+{%- set continuations = content_continuations if content_continuations and content_continuations|length == rows|length else none -%}
+{%- set content_group_indexes = node.attrs.content.groupIndexes if node.attrs.content and node.attrs.content.groupIndexes is iterable and node.attrs.content.groupIndexes is not string and node.attrs.content.groupIndexes is not mapping else none -%}
+{%- set group_indexes = content_group_indexes if continuations and content_group_indexes and content_group_indexes|length == rows|length else none -%}
+{#- Traceability cells list several records one per line ("\n"-separated by Document). -#}
+{%- set preserve_line_breaks = node.attrs.content and node.attrs.content.kind == 'traceability' -%}
+{%- if rows|length == 0 and not caption -%}
 No content found
 {%- else -%}
 {%- if node.attrs.content and node.attrs.content.headers -%}
@@ -83,7 +100,7 @@ No content found
 {%- set col_widths = col_widths|fit_column_widths(MAX_TABLE_WIDTH, MIN_COL_WIDTH) -%}
 {%- endif -%}
 {%- set fills_box = overflows or in_table_cell -%}
-    <table class="dynamic-table" style="width: {{ '100%' if fills_box or row_labels else total_width ~ 'px' }}; max-width: 100%; table-layout: fixed;">
+    <table class="dynamic-table{{ ' dynamic-table--traceability' if preserve_line_breaks else '' }}" style="width: {{ '100%' if fills_box or row_labels or preserve_line_breaks else total_width ~ 'px' }}; max-width: 100%; table-layout: fixed;">
         <colgroup>
             {%- if row_labels -%}
             {%- for _ in range(col_widths|length + 1) -%}
@@ -123,7 +140,13 @@ No content found
         </thead>
         <tbody>
             {%- for row in rows -%}
+            {%- set row_continuations = continuations[loop.index0] if continuations and continuations[loop.index0] is iterable and continuations[loop.index0] is not string and continuations[loop.index0] is not mapping else [] -%}
+            {%- set group_index = group_indexes[loop.index0] if group_indexes else none -%}
+            {%- if group_index is number and group_index % 2 == 1 -%}
+            <tr class="dynamic-table-row--group-odd">
+            {%- else -%}
             <tr>
+            {%- endif %}
                 {%- if row_labels -%}
                 <th style="font-size: {{ row_font_size }}">{{ (row_labels[loop.index0] if loop.index0 < row_labels|length else '') | safe_html }}</th>
                 {%- endif -%}
@@ -157,6 +180,12 @@ No content found
                 {% set ns = namespace(text='') %}
                 {% set cell_style = 'font-size: ' + row_font_size %}
                 {%- endif -%}
+                {#- Continuation flag looked up by the same `cell_index` as the cell itself
+                    (columns may be reordered/hidden), never by the visible loop position. -#}
+                {%- set is_continuation = props.cell_index is defined and props.cell_index < row_continuations|length and row_continuations[props.cell_index] is sameas true -%}
+                {%- if is_continuation -%}
+                {%- set ns.text = '' -%}
+                {%- endif -%}
                 {%- for mark in node.marks if node.marks -%}
                 {%- set ns.text -%}
                 {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
@@ -164,10 +193,17 @@ No content found
                 {%- endwith -%}
                 {%- endset -%}
                 {%- endfor -%}
-                <td style="{{ cell_style }}">{{ns.text | safe_html }}</td>
+                {%- if is_continuation -%}
+                <td class="dynamic-table-cell--continuation" style="{{ cell_style }}"></td>
+                {%- else -%}
+                <td style="{{ cell_style }}{{ '; white-space: pre-line' if preserve_line_breaks else '' }}">{{ns.text | safe_html }}</td>
+                {%- endif -%}
                 {%- endfor -%}
             </tr>
             {%- endfor -%}
         </tbody>
     </table>
+    {%- if caption -%}
+    <p class="dynamic-table-caption">{{ caption | safe_html }}</p>
+    {%- endif -%}
     {%- endif -%}

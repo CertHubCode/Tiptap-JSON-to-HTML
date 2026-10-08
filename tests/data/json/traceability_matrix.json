@@ -1,0 +1,25 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "dynamicTable",
+      "attrs": {
+        "path": ["Traceability Matrix"],
+        "displayPath": ["Traceability Matrix"],
+        "type": "list",
+        "columns": {},
+        "content": {
+          "kind": "traceability",
+          "headers": ["User Requirements", "System Requirements", "Verification", "Validation"],
+          "rows": [
+            ["UR-1  [The device shall display the patient's heart rate]", "SR-1  [Heart rate is sampled at 250 Hz]", "VE-1", "VA-1\nVA-2"],
+            ["UR-1  [The device shall display the patient's heart rate]", "SR-2  [The display refreshes at least once per second while a measurement is running, including during low-battery operation, sensor reconnection, alarm escalation and every other operating mode described in the system specification, without dropping samples]", "", "VA-1\nVA-2"],
+            ["UR-2  [The device shall raise an alarm on arrhythmia]", "", "", ""]
+          ]
+        },
+        "gridState": {},
+        "tableSettings": {"columnFontSize": "12px", "rowFontSize": "12px"}
+      }
+    }
+  ]
+}
