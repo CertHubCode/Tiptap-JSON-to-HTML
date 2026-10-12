@@ -11,6 +11,8 @@ from .macros import (
     get_audio_player_block,
     get_doc_block,
     make_img_src,
+    extract_cell_attrs,
+    extract_node_style,
     extract_tag_attrs,
 )
 from .jinja_filters import (
@@ -35,6 +37,8 @@ def init_env(path, config):
     # https://stackoverflow.com/a/6038550
     env.globals["url2mime"] = url2mime
     env.globals["extract_tag_attrs"] = extract_tag_attrs
+    env.globals["extract_node_style"] = extract_node_style
+    env.globals["extract_cell_attrs"] = extract_cell_attrs
     env.globals["make_img_src"] = make_img_src
     env.globals["handle_links"] = build_link_handler(config)
     env.globals["get_audio_player_block"] = get_audio_player_block

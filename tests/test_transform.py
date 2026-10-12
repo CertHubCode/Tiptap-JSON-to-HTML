@@ -54,6 +54,7 @@ tags_to_test = (
     "dynamic_table_dup_labels",
     "risk_matrix",
     "table",
+    "table_cell_styles",
     "date",
     "dynamic_text_content",
     "checklist",

@@ -94,8 +94,12 @@
     {%- for row in node.content -%}
     <tr>
         {%- for cell in row.content -%}
+        {#- `extract_cell_attrs`: colspan/rowspan of merged cells plus the cell
+            menu's background and alignment (`backgroundColor`, `nodeTextAlign`,
+            `nodeVerticalAlign`) — without them a shaded header row printed
+            white-on-white and a merged cell shifted every row below it. -#}
         {%- if cell.type == 'tableHeader' -%}
-        <th {% if cell.attrs.colspan and cell.attrs.colspan> 1 %}colspan="{{ cell.attrs.colspan }}"{% endif %}>
+        <th{{ extract_cell_attrs(cell) }}>
             {%- for content in cell.content -%}
             {%- with template=content.type + '.html', node=content, in_table_cell=True -%}
             {%- include template -%}
@@ -103,7 +107,7 @@
             {%- endfor %}
         </th>
         {%- else -%}
-        <td {% if cell.attrs.colspan and cell.attrs.colspan> 1 %}colspan="{{ cell.attrs.colspan }}"{% endif %}>
+        <td{{ extract_cell_attrs(cell) }}>
             {%- for content in cell.content -%}
             {%- with template=content.type + '.html', node=content, in_table_cell=True -%}
             {%- include template -%}

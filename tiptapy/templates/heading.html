@@ -1,8 +1,9 @@
 {#- `textAlign` is the editor's toolbar alignment (TextAlign extension, kept on
-    headings like on paragraphs) — print it the way paragraph.html does. -#}
-<h{{node.attrs.level|default(1)}}{% if node.attrs.uid %} id="{{ node.attrs.uid }}"{% endif %}{{ extract_tag_attrs(node) }}{% if node.attrs and node.attrs.textAlign %} style="text-align: {{ node.attrs.textAlign }}"{% endif %}>
+    headings like on paragraphs) and `backgroundColor` its block background —
+    both printed by `extract_node_style`, the same way paragraph.html does. -#}
+<h{{node.attrs.level|default(1)}}{% if node.attrs.uid %} id="{{ node.attrs.uid }}"{% endif %}{{ extract_tag_attrs(node) }}{{ extract_node_style(node) }}>
 {%- for item in node.content -%}
-  {%- with template=item.type + '.html', node=item -%} 
+  {%- with template=item.type + '.html', node=item -%}
       {%- include template -%}
         {%- endwith -%}
 	{%- endfor -%}

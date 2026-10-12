@@ -1,4 +1,5 @@
 import pkgutil
+import re
 from string import Template
 from urllib.parse import urlparse
 
@@ -14,6 +15,60 @@ def extract_tag_attrs(node):
         if attrs
         else ""
     )
+
+
+# A CSS colour as the editor stores it: `#rrggbb`, `rgb(…)` / `rgba(…)`, a
+# colour name or a `var(--…)` reference. Anything else (quotes, semicolons,
+# `url(…)`, `expression(…)`) is dropped rather than printed into the page.
+_CSS_COLOR = re.compile(
+    r"^(#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})"
+    r"|[a-zA-Z]+|rgba?\([\d\s.,%]+\)|hsla?\([\d\s.,%]+\)|var\(--[\w-]+\))$"
+)
+_TEXT_ALIGNS = ("left", "center", "right", "justify")
+_VERTICAL_ALIGNS = ("top", "middle", "bottom")
+
+
+def _css_color(value):
+    value = (value or "").strip() if isinstance(value, str) else ""
+    return value if _CSS_COLOR.match(value) else ""
+
+
+def extract_node_style(node):
+    """The ``style`` attribute a block or table cell carries in the editor.
+
+    The editor keeps its toolbar formatting as node attrs: ``textAlign``
+    (TextAlign extension on paragraphs/headings), ``nodeTextAlign`` /
+    ``nodeVerticalAlign`` (NodeAlignment on table cells) and
+    ``backgroundColor`` (NodeBackground on blocks and cells). Returns
+    ``' style="…"'`` or an empty string.
+
+    ``left`` is the editor's default alignment and is NOT printed — the
+    editor's own renderHTML omits it too — so a paragraph inside a centred
+    cell keeps the cell's alignment instead of overriding it with the default.
+    """
+    attrs = node.get("attrs") or {}
+    declarations = []
+    text_align = attrs.get("nodeTextAlign") or attrs.get("textAlign")
+    if text_align in _TEXT_ALIGNS and text_align != "left":
+        declarations.append(f"text-align: {text_align}")
+    vertical_align = attrs.get("nodeVerticalAlign")
+    if vertical_align in _VERTICAL_ALIGNS:
+        declarations.append(f"vertical-align: {vertical_align}")
+    background = _css_color(attrs.get("backgroundColor"))
+    if background:
+        declarations.append(f"background-color: {background}")
+    return f' style="{"; ".join(declarations)}"' if declarations else ""
+
+
+def extract_cell_attrs(cell):
+    """``colspan`` / ``rowspan`` (when they merge cells) plus the cell's style."""
+    attrs = cell.get("attrs") or {}
+    out = ""
+    for span in ("colspan", "rowspan"):
+        value = attrs.get(span)
+        if isinstance(value, int) and value > 1:
+            out += f' {span}="{value}"'
+    return out + extract_node_style(cell)
 
 
 def image_src_url(src):

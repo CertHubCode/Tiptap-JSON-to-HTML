@@ -1,6 +1,6 @@
-<ul{{ extract_tag_attrs(node) }}>
+<ul{{ extract_tag_attrs(node) }}{{ extract_node_style(node) }}>
 {%- for item in node.content -%}
-  {%- with template=item.type + '.html', node=item -%} 
+  {%- with template=item.type + '.html', node=item -%}
       {%- include template -%}
         {%- endwith -%}
 	{%- endfor -%}

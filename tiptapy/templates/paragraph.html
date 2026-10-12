@@ -1,8 +1,7 @@
-{%- if node.attrs and node.attrs.textAlign -%}
-<p{{ extract_tag_attrs(node) }} style="text-align: {{node.attrs.textAlign}}">
-  {%- else -%}
-  <p{{ extract_tag_attrs(node) }}>
-    {%- endif -%}
+{#- `extract_node_style` prints the toolbar alignment (`textAlign`) and the
+    block background (`backgroundColor`, NodeBackground) the editor keeps as
+    node attrs. -#}
+<p{{ extract_tag_attrs(node) }}{{ extract_node_style(node) }}>
     {%- if node.content -%}
     {%- for item in node.content -%}
     {%- with template=item.type + '.html', node=item -%}
