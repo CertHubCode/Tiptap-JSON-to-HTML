@@ -138,6 +138,43 @@ class TestInvalidHTML:
         assert "Description" not in rendered_html, "Any column hidden in gridState should be omitted"
         assert "Yaaahoooooo" not in rendered_html, "Hidden column cells should be omitted"
 
+    def test_matrix_duplicate_axis_labels_keep_distinct_cells(self):
+        """Two severity axis records may carry the same label — TechDoc keys its axis on
+        record_id, which MatrixDataTransformer drops on the way to plain `headers`. Cells
+        must resolve by column position; `headers.index(label)` returns the first match and
+        rendered that one cell in both columns, losing the other."""
+        data = {
+            "type": "doc",
+            "content": [
+                {
+                    "type": "dynamicTable",
+                    "attrs": {
+                        "columns": {},
+                        "gridState": {},
+                        "content": {
+                            "headers": ["Critical", "Critical"],
+                            "rowLabels": ["Unlikely"],
+                            "rows": [
+                                [
+                                    {"value": 1, "color": "#a5d6a7"},
+                                    {"value": 7, "color": "#ef9a9a"},
+                                ]
+                            ],
+                        },
+                    },
+                }
+            ],
+        }
+
+        rendered_html = self.doc.render(data)
+
+        # Both columns survive, each with its own cell and color.
+        assert rendered_html.count("Critical") == 2, "Both duplicate-labelled columns should render"
+        assert ">1</td>" in rendered_html, "First column's cell should render"
+        assert ">7</td>" in rendered_html, "Second column's cell should render"
+        assert rendered_html.count(">1</td>") == 1, "First cell must not be rendered in both columns"
+        assert "#a5d6a7" in rendered_html and "#ef9a9a" in rendered_html, "Each cell keeps its own color"
+
     def test_dynamic_table_partial_columns_do_not_hide_other_headers(self):
         """Partial attrs.columns entries should act as overrides, not replace the full table schema."""
         data = {
