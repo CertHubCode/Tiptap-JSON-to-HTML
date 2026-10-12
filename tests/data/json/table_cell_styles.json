@@ -1,0 +1,100 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "table",
+      "content": [
+        {
+          "type": "tableRow",
+          "content": [
+            {
+              "type": "tableHeader",
+              "attrs": { "colspan": 1, "rowspan": 1, "colwidth": [150], "backgroundColor": "#000080" },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": { "textAlign": "left" },
+                  "content": [
+                    { "type": "text", "marks": [{ "type": "textStyle", "attrs": { "color": "#FFFFFF" } }], "text": "Product code" }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableHeader",
+              "attrs": { "colspan": 1, "rowspan": 1, "colwidth": [360], "backgroundColor": "#000080", "nodeTextAlign": "center" },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": { "textAlign": "left" },
+                  "content": [
+                    { "type": "text", "marks": [{ "type": "textStyle", "attrs": { "color": "#FFFFFF" } }], "text": "Designation" }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableHeader",
+              "attrs": { "colspan": 1, "rowspan": 1, "colwidth": [160], "backgroundColor": "rgb(0, 0, 128)", "nodeTextAlign": "right" },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": { "textAlign": "left" },
+                  "content": [
+                    { "type": "text", "marks": [{ "type": "textStyle", "attrs": { "color": "#FFFFFF" } }], "text": "Basic UDI-DI" }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "content": [
+            {
+              "type": "tableCell",
+              "attrs": { "colspan": 1, "rowspan": 2, "colwidth": [150], "nodeVerticalAlign": "middle", "backgroundColor": "#FFF2CC" },
+              "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "spans two rows" }] }]
+            },
+            {
+              "type": "tableCell",
+              "attrs": { "colspan": 1, "rowspan": 1, "colwidth": [360] },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": { "textAlign": "right", "backgroundColor": "#E2EFDA" },
+                  "content": [{ "type": "text", "text": "paragraph with its own background" }]
+                }
+              ]
+            },
+            {
+              "type": "tableCell",
+              "attrs": { "colspan": 1, "rowspan": 1, "colwidth": [160], "nodeTextAlign": "center" },
+              "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "centred by the cell" }] }]
+            }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "content": [
+            {
+              "type": "tableCell",
+              "attrs": { "colspan": 2, "rowspan": 1, "colwidth": [360, 160], "backgroundColor": "url(https://evil.example/x.png)" },
+              "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "merged across two columns, unsafe background dropped" }] }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3, "backgroundColor": "#DDEBF7", "textAlign": "center" },
+      "content": [{ "type": "text", "text": "Shaded, centred heading" }]
+    },
+    {
+      "type": "blockquote",
+      "attrs": { "backgroundColor": "#F2F2F2" },
+      "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "shaded quote" }] }]
+    }
+  ]
+}
