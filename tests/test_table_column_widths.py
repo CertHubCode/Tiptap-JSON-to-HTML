@@ -62,18 +62,30 @@ class TestTableColumnWidths:
 
         rendered_html = self.doc.render(data)
 
-        # The unsized column takes the editor's default 120px instead of stretching the table.
-        assert '<colgroup><col style="width: 120px"><col style="width: 136px"></colgroup>' in rendered_html
-        assert 'width: 256px' in rendered_html
-        assert 'table-layout: fixed' in rendered_html
+        # The unsized column is a `1fr` track in the editor: the table fills the page and
+        # the unsized column takes what the sized one leaves.
+        assert '<colgroup><col><col style="width: 136px"></colgroup>' in rendered_html
+        assert 'style="width: 100%; max-width: 100%; table-layout: fixed;"' in rendered_html
 
-    def test_blank_table_is_as_wide_as_in_the_editor_not_the_page(self):
-        data = _table_doc(header_cells=[_cell("tableHeader", "")], body_cells=[_cell("tableCell", "")])
+    def test_unsized_single_cell_info_box_fills_the_page(self):
+        """An info box is a one-cell table with no `colwidth`. It spans the page in the
+        editor, and was printed 120px wide (detechgene NDA, 19 pages)."""
+        data = {
+            "type": "doc",
+            "content": [
+                {
+                    "type": "table",
+                    "content": [{"type": "tableRow", "content": [_cell("tableHeader", "Why this agreement exists")]}],
+                }
+            ],
+        }
 
         rendered_html = self.doc.render(data)
 
-        assert '<colgroup><col style="width: 120px"></colgroup>' in rendered_html
-        assert 'width: 120px' in rendered_html
+        assert (
+            '<table class="basic-table" style="width: 100%; max-width: 100%; table-layout: fixed;">'
+            "<colgroup><col></colgroup>"
+        ) in rendered_html
 
     def test_scaled_column_is_held_at_the_resize_minimum(self):
         data = _table_doc(
