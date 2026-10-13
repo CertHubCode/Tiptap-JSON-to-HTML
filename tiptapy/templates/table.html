@@ -42,11 +42,13 @@
      the page width means nothing there.
    - Holding a nested table: fill the page. Columns with a nested table share what the
      others leave instead of keeping a `colwidth`, which a large nested table may not fit.
-   - Otherwise as wide as in the editor; a table wider than the page is scaled down to
-     it, keeping MIN_COL_WIDTH where it fits (fit_column_widths). An unsized column is a
+   - Otherwise it fills the page. A table wider than the page is scaled down to it,
+     keeping MIN_COL_WIDTH where it fits (fit_column_widths). An unsized column is a
      `minmax(120px, 1fr)` grid track in the editor (table-pages-integration.ts, Frontend),
-     so a table with one fills the page and its unsized columns share what the sized
-     ones leave — sizing them at DEFAULT_COL_WIDTH shrank info boxes to 120px.
+     so its unsized columns share what the sized ones leave — sizing them at
+     DEFAULT_COL_WIDTH shrank info boxes to 120px. With every column sized, the spare
+     width is shared equally, as in dynamicTable.html — kept at the editor's pixel
+     widths, a two-column table printed a fraction of the page wide.
    Table layout is fixed throughout, so no content can widen a table past its box. -#}
 {%- set col_css = [] -%}
 {%- set total_width = col_widths|sum -%}
@@ -81,10 +83,16 @@
 {%- set _ = col_css.append((w / MAX_TABLE_WIDTH * 100)|round(4) ~ '%') -%}
 {%- endfor -%}
 {%- endif -%}
-{%- else -%}
-{%- set table_width = '100%' if unsized_cols or not col_widths else total_width ~ 'px' -%}
+{%- elif unsized_cols or not col_widths -%}
+{%- set table_width = '100%' -%}
 {%- for w in col_widths -%}
 {%- set _ = col_css.append(none if loop.index0 in unsized_cols else w ~ 'px') -%}
+{%- endfor -%}
+{%- else -%}
+{%- set table_width = '100%' -%}
+{%- set spare = (MAX_TABLE_WIDTH - total_width) / col_widths|length -%}
+{%- for w in col_widths -%}
+{%- set _ = col_css.append(((w + spare) / MAX_TABLE_WIDTH * 100)|round(4) ~ '%') -%}
 {%- endfor -%}
 {%- endif -%}
 <table class="basic-table" style="width: {{ table_width }}; max-width: 100%; table-layout: fixed;">
