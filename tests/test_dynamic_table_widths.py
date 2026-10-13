@@ -21,16 +21,18 @@ def _dynamic_table_doc(headers, dimensions=None):
 
 
 class TestDynamicTableColumnWidths:
-    """The PDF sizes columns like the editor grid, scaled down to the page when wider."""
+    """The PDF sizes columns like the editor grid: a table that fits fills the page, the
+    spare width shared equally; a wider one is scaled down to the page."""
 
     def setup_method(self):
         self.doc = BaseDoc({"base_url": "https://example.com"})
 
-    def test_table_that_fits_keeps_the_editors_widths(self):
+    def test_table_that_fits_shares_the_spare_width_equally(self):
         html = self.doc.render(_dynamic_table_doc(["A", "B", "C"], dimensions={"A": {"width": 250}}))
-        assert 'style="width: 450px;' in html
-        # Unsized columns take the DataGrid's default 100px.
-        assert re.findall(r'<col\s+style="width: (\d+)px">', html) == ["250", "100", "100"]
+        assert 'style="width: 100%;' in html
+        # Unsized columns take the DataGrid's default 100px; each column then gets a third of
+        # the spare 670 - 450 = 220px (portrait): 323.3, 173.3 and 173.3 of 670.
+        assert re.findall(r'<col\s+style="width: ([\d.]+)%">', html) == ["48.2587", "25.8706", "25.8706"]
 
     def test_overflowing_table_scales_to_the_page_width(self):
         dimensions = {"A": {"width": 400}, "B": {"width": 400}}
@@ -41,7 +43,8 @@ class TestDynamicTableColumnWidths:
 
     def test_column_is_never_narrower_than_the_editors_minimum(self):
         html = self.doc.render(_dynamic_table_doc(["A", "B"], dimensions={"A": {"width": 30}}))
-        assert re.findall(r'<col\s+style="width: (\d+)px">', html) == ["50", "100"]
+        # A is raised to 50, then both share the spare 670 - 150 = 520px: 310 and 360 of 670.
+        assert re.findall(r'<col\s+style="width: ([\d.]+)%">', html) == ["46.2687", "53.7313"]
 
     def test_scaled_column_is_held_at_the_minimum_and_the_rest_shrink(self):
         dimensions = {"A": {"width": 600}, "B": {"width": 50}, "C": {"width": 50}}
