@@ -22,13 +22,18 @@
 {%- endfor -%}
 {%- set header_row = node.content[0] if node.content else none -%}
 {%- set col_widths = [] -%}
+{#- Columns (by index) without a `colwidth`. -#}
+{%- set unsized_cols = [] -%}
 {%- if header_row and header_row.content -%}
 {%- for cell in header_row.content -%}
 {%- set span = cell.attrs.colspan if cell.attrs.colspan else 1 -%}
 {%- set cw = cell.attrs.colwidth if cell.attrs.colwidth else [] -%}
 {%- for i in range(span) -%}
-{%- set w = cw[i] if cw and i < cw|length and cw[i] else DEFAULT_COL_WIDTH -%}
-{%- set _ = col_widths.append([w, MIN_COL_WIDTH]|max) -%}
+{%- set w = cw[i] if cw and i < cw|length and cw[i] else none -%}
+{%- if not w -%}
+{%- set _ = unsized_cols.append(col_widths|length) -%}
+{%- endif -%}
+{%- set _ = col_widths.append([w or DEFAULT_COL_WIDTH, MIN_COL_WIDTH]|max) -%}
 {%- endfor -%}
 {%- endfor -%}
 {%- endif -%}
@@ -38,7 +43,10 @@
    - Holding a nested table: fill the page. Columns with a nested table share what the
      others leave instead of keeping a `colwidth`, which a large nested table may not fit.
    - Otherwise as wide as in the editor; a table wider than the page is scaled down to
-     it, keeping MIN_COL_WIDTH where it fits (fit_column_widths).
+     it, keeping MIN_COL_WIDTH where it fits (fit_column_widths). An unsized column is a
+     `minmax(120px, 1fr)` grid track in the editor (table-pages-integration.ts, Frontend),
+     so a table with one fills the page and its unsized columns share what the sized
+     ones leave — sizing them at DEFAULT_COL_WIDTH shrank info boxes to 120px.
    Table layout is fixed throughout, so no content can widen a table past its box. -#}
 {%- set col_css = [] -%}
 {%- set total_width = col_widths|sum -%}
@@ -74,9 +82,9 @@
 {%- endfor -%}
 {%- endif -%}
 {%- else -%}
-{%- set table_width = (total_width ~ 'px') if col_widths else '100%' -%}
+{%- set table_width = '100%' if unsized_cols or not col_widths else total_width ~ 'px' -%}
 {%- for w in col_widths -%}
-{%- set _ = col_css.append(w ~ 'px') -%}
+{%- set _ = col_css.append(none if loop.index0 in unsized_cols else w ~ 'px') -%}
 {%- endfor -%}
 {%- endif -%}
 <table class="basic-table" style="width: {{ table_width }}; max-width: 100%; table-layout: fixed;">

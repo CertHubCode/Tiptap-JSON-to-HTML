@@ -83,13 +83,14 @@ No content found
 {%- endfor -%}
 {%- endif -%}
 {%- set sorted_columns = visible_columns|sort(attribute='1.order') -%}
-{#- Every column is as wide as in the editor: its saved width, else DEFAULT_COL_WIDTH, and
-   at least MIN_COL_WIDTH. A table that fits the page keeps those widths; a wider one,
-   which the editor clips at the page edge, is scaled down to the page width instead,
-   still keeping MIN_COL_WIDTH where it fits (fit_column_widths). Inside a table cell
-   (`in_table_cell`, set by table.html) it fills the cell in the editor's proportions
-   instead — the page width means nothing there. A matrix fills the width, as its cell
-   columns flex in the editor (matrixGridUtils.ts). -#}
+{#- Every column starts as wide as in the editor: its saved width, else DEFAULT_COL_WIDTH,
+   and at least MIN_COL_WIDTH. A table that fits the page fills it, the spare width shared
+   equally between the columns, as the editor grid does (flex-grow: 1 on every column in
+   DynamicTableRenderer.tsx); a wider one, which the editor clips at the page edge, is
+   scaled down to the page width instead, still keeping MIN_COL_WIDTH where it fits
+   (fit_column_widths). Inside a table cell (`in_table_cell`, set by table.html) it fills
+   the cell in the editor's proportions instead — the page width means nothing there. A
+   matrix fills the width, as its cell columns flex in the editor (matrixGridUtils.ts). -#}
 {%- set col_widths = [] -%}
 {%- for header, props in sorted_columns -%}
 {%- set _ = col_widths.append([props.width or DEFAULT_COL_WIDTH, MIN_COL_WIDTH]|max) -%}
@@ -98,9 +99,15 @@ No content found
 {%- set overflows = total_width > MAX_TABLE_WIDTH -%}
 {%- if overflows and not in_table_cell -%}
 {%- set col_widths = col_widths|fit_column_widths(MAX_TABLE_WIDTH, MIN_COL_WIDTH) -%}
+{%- elif not in_table_cell and col_widths -%}
+{%- set spare = (MAX_TABLE_WIDTH - total_width) / col_widths|length -%}
+{%- set stretched = [] -%}
+{%- for width in col_widths -%}
+{%- set _ = stretched.append(width + spare) -%}
+{%- endfor -%}
+{%- set col_widths = stretched -%}
 {%- endif -%}
-{%- set fills_box = overflows or in_table_cell -%}
-    <table class="dynamic-table{{ ' dynamic-table--traceability' if preserve_line_breaks else '' }}" style="width: {{ '100%' if fills_box or row_labels or preserve_line_breaks else total_width ~ 'px' }}; max-width: 100%; table-layout: fixed;">
+    <table class="dynamic-table{{ ' dynamic-table--traceability' if preserve_line_breaks else '' }}" style="width: 100%; max-width: 100%; table-layout: fixed;">
         <colgroup>
             {%- if row_labels -%}
             {%- for _ in range(col_widths|length + 1) -%}
@@ -108,11 +115,7 @@ No content found
             {%- endfor -%}
             {%- else -%}
             {%- for width in col_widths -%}
-            {%- if fills_box -%}
             <col style="width: {{ (width / col_widths|sum * 100)|round(4) }}%">
-            {%- else -%}
-            <col style="width: {{ width }}px">
-            {%- endif -%}
             {%- endfor -%}
             {%- endif -%}
         </colgroup>
