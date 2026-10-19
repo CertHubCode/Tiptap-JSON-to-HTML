@@ -1,5 +1,6 @@
 import pytest
 
+from tiptapy import BaseDoc
 from tiptapy.jinja_filters import markdown_filter
 
 
@@ -48,17 +49,21 @@ def test_html_stays_escaped(source, expected):
 @pytest.mark.parametrize(
     "source, expected",
     [
-        # `>` arrives as `&gt;`, so blockquotes only parse after unescaping.
-        ("&gt; quoted", "<blockquote>\n<p>quoted</p>\n</blockquote>"),
-        # `"` arrives as `&quot;`, so link titles only parse after unescaping.
+        # `>` would be `&gt;` if escaped before the filter, and never parse.
+        ("> quoted", "<blockquote>\n<p>quoted</p>\n</blockquote>"),
+        # `"` would be `&quot;` if escaped before the filter, and never parse.
         (
-            "[t](http://example.com &quot;title text&quot;)",
+            '[t](http://example.com "title text")',
             '<a href="http://example.com" title="title text">t</a>',
         ),
     ],
 )
-def test_upstream_escaping_does_not_break_syntax(source, expected):
-    assert markdown_filter(source) == expected
+def test_render_reaches_the_filter_unescaped(source, expected):
+    class config:
+        DOMAIN = "python.org"
+
+    doc = {"type": "doc", "content": [{"type": "textField", "attrs": {"fieldValue": source}}]}
+    assert expected in BaseDoc(config).render(doc)
 
 
 def test_bare_urls_are_linkified():

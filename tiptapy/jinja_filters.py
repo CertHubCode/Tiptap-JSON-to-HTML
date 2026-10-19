@@ -1,5 +1,4 @@
 import re
-from html import unescape
 
 from markdown_it import MarkdownIt
 from markupsafe import Markup
@@ -101,19 +100,15 @@ def safe_html_filter(content):
 def markdown_filter(content):
     """Render markdown source as HTML.
 
-    `escape_values_recursive` has already HTML escaped the value by the time it
-    reaches this filter, which destroys markdown syntax: `>` becomes `&gt;` so
-    blockquotes never parse, and `"` becomes `&quot;` so link and image titles
-    never parse. Undo that escaping and let markdown-it produce the output
-    instead. That is safe because `_md` is built with `html: False`, so every
-    piece of text is re-escaped on the way out and no raw HTML from the source
-    survives, and markdown-it rejects `javascript:`/`vbscript:`/`file:`/`data:`
-    hrefs in links.
+    Returned as `Markup`, so autoescaping leaves it alone. That is safe because
+    `_md` is built with `html: False`, so every piece of text is escaped on the
+    way out and no raw HTML from the source survives, and markdown-it rejects
+    `javascript:`/`vbscript:`/`file:`/`data:` hrefs in links.
     """
     if not isinstance(content, str) or not content.strip():
         return content
 
-    rendered = _md.render(unescape(content)).strip()
+    rendered = _md.render(content).strip()
     if rendered.count("<p>") == 1:
         match = _single_paragraph_re.match(rendered)
         if match:
