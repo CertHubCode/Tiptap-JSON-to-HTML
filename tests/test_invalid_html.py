@@ -53,9 +53,9 @@ class TestInvalidHTML:
 
         # Test that invalid HTML is escaped
         assert "&lt;invalid&gt;text&lt;/invalid&gt;" in rendered_html, "Invalid HTML should be escaped"
-        assert "&lt;script&gt;alert(&#x27;xss&#x27;)&lt;/script&gt;" in rendered_html, "Script tags should be escaped"
-        assert "&lt;div onclick=&#x27;alert()&#x27;&gt;Dangerous&lt;/div&gt;" in rendered_html, "Event handlers should be escaped"
-        assert "&lt;a href=&#x27;javascript:alert()&#x27;&gt;Dangerous link&lt;/a&gt;" in rendered_html, "JavaScript protocol should be escaped"
+        assert "&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;" in rendered_html, "Script tags should be escaped"
+        assert "&lt;div onclick=&#39;alert()&#39;&gt;Dangerous&lt;/div&gt;" in rendered_html, "Event handlers should be escaped"
+        assert "&lt;a href=&#39;javascript:alert()&#39;&gt;Dangerous link&lt;/a&gt;" in rendered_html, "JavaScript protocol should be escaped"
         assert "&lt;div&gt;Unclosed" in rendered_html, "Unclosed tags should be escaped"
 
         # Test that custom elements are escaped (no custom elements supported)
@@ -265,16 +265,16 @@ class TestInvalidHTML:
         print(f"Security test rendered HTML: {rendered_html}")
 
         # Test that dangerous content is escaped
-        assert "&lt;script&gt;alert(&#x27;xss&#x27;)&lt;/script&gt;" in rendered_html, "Script tags should be escaped"
-        assert "&lt;iframe src=&#x27;javascript:alert()&#x27;&gt;&lt;/iframe&gt;" in rendered_html, "Iframe should be escaped"
-        assert "&lt;object data=&#x27;data:text/html,&lt;script&gt;alert()&lt;/script&gt;&#x27;&gt;" in rendered_html, "Object should be escaped"
-        assert "&lt;embed src=&#x27;javascript:alert()&#x27;&gt;" in rendered_html, "Embed should be escaped"
-        assert "&lt;div onerror=&#x27;alert()&#x27;&gt;Error&lt;/div&gt;" in rendered_html, "Event handlers should be escaped"
-        assert "&lt;img src=&#x27;javascript:alert()&#x27; onload=&#x27;alert()&#x27;&gt;" in rendered_html, "Dangerous img should be escaped"
-        assert "&lt;a href=&#x27;vbscript:msgbox(&quot;Hello&quot;)&#x27;&gt;VBScript&lt;/a&gt;" in rendered_html, "VBScript should be escaped"
-        assert "&lt;form onsubmit=&#x27;alert()&#x27;&gt;Submit&lt;/form&gt;" in rendered_html, "Form events should be escaped"
-        assert "&lt;input onchange=&#x27;alert()&#x27; onkeypress=&#x27;alert()&#x27;&gt;" in rendered_html, "Input events should be escaped"
-        assert "&lt;textarea onblur=&#x27;alert()&#x27; onfocus=&#x27;alert()&#x27;&gt;Text&lt;/textarea&gt;" in rendered_html, "Textarea events should be escaped"
+        assert "&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;" in rendered_html, "Script tags should be escaped"
+        assert "&lt;iframe src=&#39;javascript:alert()&#39;&gt;&lt;/iframe&gt;" in rendered_html, "Iframe should be escaped"
+        assert "&lt;object data=&#39;data:text/html,&lt;script&gt;alert()&lt;/script&gt;&#39;&gt;" in rendered_html, "Object should be escaped"
+        assert "&lt;embed src=&#39;javascript:alert()&#39;&gt;" in rendered_html, "Embed should be escaped"
+        assert "&lt;div onerror=&#39;alert()&#39;&gt;Error&lt;/div&gt;" in rendered_html, "Event handlers should be escaped"
+        assert "&lt;img src=&#39;javascript:alert()&#39; onload=&#39;alert()&#39;&gt;" in rendered_html, "Dangerous img should be escaped"
+        assert "&lt;a href=&#39;vbscript:msgbox(&#34;Hello&#34;)&#39;&gt;VBScript&lt;/a&gt;" in rendered_html, "VBScript should be escaped"
+        assert "&lt;form onsubmit=&#39;alert()&#39;&gt;Submit&lt;/form&gt;" in rendered_html, "Form events should be escaped"
+        assert "&lt;input onchange=&#39;alert()&#39; onkeypress=&#39;alert()&#39;&gt;" in rendered_html, "Input events should be escaped"
+        assert "&lt;textarea onblur=&#39;alert()&#39; onfocus=&#39;alert()&#39;&gt;Text&lt;/textarea&gt;" in rendered_html, "Textarea events should be escaped"
 
         print("✅ Security features working correctly")
 
@@ -413,9 +413,9 @@ class TestInvalidHTML:
         # Test that dangerous content is escaped
         # Note: <invalidtag> is preserved because our flexible approach allows any tag name
         # (HTML5 supports custom elements), but dangerous content is properly escaped
-        assert "&lt;script&gt;alert(&#x27;xss&#x27;)&lt;/script&gt;" in rendered_html, "Script tags should be escaped"
-        assert "&lt;div onclick=&#x27;alert()&#x27;&gt;Dangerous&lt;/div&gt;" in rendered_html, "Event handlers should be escaped"
-        assert "&lt;a href=&#x27;javascript:alert()&#x27;&gt;Dangerous link&lt;/a&gt;" in rendered_html, "JavaScript protocol should be escaped"
+        assert "&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;" in rendered_html, "Script tags should be escaped"
+        assert "&lt;div onclick=&#39;alert()&#39;&gt;Dangerous&lt;/div&gt;" in rendered_html, "Event handlers should be escaped"
+        assert "&lt;a href=&#39;javascript:alert()&#39;&gt;Dangerous link&lt;/a&gt;" in rendered_html, "JavaScript protocol should be escaped"
         assert "&lt;div&gt;Unclosed" in rendered_html, "Unclosed tags should be escaped"
 
         print("✅ Flexible HTML tag handling working correctly")
