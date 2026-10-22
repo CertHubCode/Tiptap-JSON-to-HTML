@@ -34,6 +34,38 @@ def test_html_in_text_renders_as_text(payload):
     assert "&lt;" in html
 
 
+@pytest.mark.parametrize(
+    "payload",
+    [
+        '<img src="file:///etc/passwd">',
+        "<img src=http://169.254.169.254/latest/meta-data/>",
+        "<a rel=attachment href=file:///etc/passwd>x</a>",
+        '<svg><use href="file:///etc/passwd#x"></use></svg>',
+        '<span style="background: url(file:///etc/passwd)">x</span>',
+    ],
+)
+def test_dynamic_table_cell_html_cannot_make_weasyprint_fetch(payload):
+    """Cells go through `safe_html`, which emits HTML the validator accepts as-is."""
+    doc = {
+        "type": "doc",
+        "content": [
+            {"type": "dynamicTable", "attrs": {"content": {"headers": ["c"], "rows": [[payload]]}}}
+        ],
+    }
+    html = BaseDoc(config).render(doc)
+    assert payload not in html
+    assert "&lt;" in html
+
+
+def test_dynamic_table_cell_keeps_renderer_inline_images_and_anchors():
+    cell = '<img src="data:image/png;base64,AAAA" alt="f.png"><a href="#embedded-file-1-appendix">f.pdf</a>'
+    doc = {
+        "type": "doc",
+        "content": [{"type": "dynamicTable", "attrs": {"content": {"headers": ["c"], "rows": [[cell]]}}}],
+    }
+    assert cell in BaseDoc(config).render(doc)
+
+
 def test_link_attrs_cannot_break_out_of_the_tag():
     mark = {"type": "link", "attrs": {"href": 'x" onmouseover="y', "a b=c": "d"}}
     html = BaseDoc(config).render(_paragraph("t", [mark]))
