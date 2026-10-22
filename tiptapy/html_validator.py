@@ -59,6 +59,18 @@ class HTMLValidator:
         'data:application/javascript', 'data:application/ecmascript'
     }
 
+    # Attributes WeasyPrint fetches a resource from (as does `href` on any tag but
+    # `<a>`, e.g. svg `<use>`/`<feImage>`). The Renderer's url_fetcher follows
+    # file:// and internal http(s) URLs, so these may only carry inline data or an
+    # in-document anchor, which is what the Renderer itself writes into table cells
+    # (CU-123z74bznuv).
+    RESOURCE_ATTRIBUTES = {
+        'src', 'srcset', 'data', 'poster', 'background', 'dynsrc', 'lowsrc', 'xlink:href'
+    }
+    INLINE_RESOURCE_PREFIXES = ('data:image/', '#')
+    # `url(` fetches from CSS; a backslash can spell it as a CSS escape.
+    FETCHING_STYLE = re.compile(r'\\|url\s*\(|image(?:-set)?\s*\(', re.IGNORECASE)
+
     def is_valid_html(self, content: str) -> Tuple[bool, str]:
         """
         Validate HTML content for safety and well-formedness.
@@ -126,6 +138,8 @@ class HTMLValidator:
                     attr_name_lower = attr_name.lower()
                     if attr_name_lower in self.DANGEROUS_ATTRIBUTES:
                         return False
+                    if not self._is_safe_resource_attribute(tag, attr_name_lower, attr_value):
+                        return False
 
                     # Check attribute values for dangerous protocols
                     if isinstance(attr_value, str):
@@ -140,6 +154,19 @@ class HTMLValidator:
                                 for protocol in self.DANGEROUS_PROTOCOLS:
                                     if protocol in value_lower:
                                         return False
+        return True
+
+    def _is_safe_resource_attribute(self, tag, attr_name: str, attr_value) -> bool:
+        """False for an attribute that would make WeasyPrint load an external resource."""
+        values = attr_value if isinstance(attr_value, list) else [attr_value]
+        values = [v.strip().lower() for v in values if isinstance(v, str)]
+        # `<a rel=attachment href=...>` embeds whatever `href` points at in the PDF.
+        if attr_name == 'rel':
+            return not any('attachment' in v for v in values)
+        if attr_name == 'style':
+            return not any(self.FETCHING_STYLE.search(v) for v in values)
+        if attr_name in self.RESOURCE_ATTRIBUTES or (attr_name == 'href' and tag.name.lower() != 'a'):
+            return all(v.startswith(self.INLINE_RESOURCE_PREFIXES) for v in values)
         return True
 
 
