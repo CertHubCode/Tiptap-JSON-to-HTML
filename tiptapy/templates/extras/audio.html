@@ -5,9 +5,9 @@
 
   <figure class="audio-player-container"{{ extract_tag_attrs(node) }}>
     {%- if caption -%}
-      <div><audio src={{src}}></audio>{{audio_player_block}}</div><figcaption>{{caption}}</figcaption>
+      <div><audio src="{{src}}"></audio>{{audio_player_block}}</div><figcaption>{{caption}}</figcaption>
     {%- else -%}
-      <div><audio src={{src}}></audio>{{audio_player_block}}</div>
+      <div><audio src="{{src}}"></audio>{{audio_player_block}}</div>
     {%- endif -%}
   </figure>
 {%- endif -%}

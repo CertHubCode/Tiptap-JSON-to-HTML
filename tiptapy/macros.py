@@ -3,18 +3,32 @@ import re
 from string import Template
 from urllib.parse import urlparse
 
+from markupsafe import Markup, escape
+
+# Templates are autoescaped, so every helper here that returns HTML returns
+# `Markup` and escapes the values it interpolates itself.
+
+# An attribute name that cannot end the tag or start a second attribute: no
+# whitespace, quotes, `=`, `/` or `>`.
+_ATTR_NAME = re.compile(r"[A-Za-z_:][\w:.-]*")
+
+
+def html_attrs(attrs, prefix=""):
+    """``attrs`` as ``' name="value"'`` pairs, values escaped. Pairs whose
+    value is ``None`` or whose name is not a plain attribute name (e.g. a key
+    like ``x onload=…``) are dropped."""
+    return Markup("").join(
+        Markup(' {}{}="{}"').format(prefix, name, value)
+        for name, value in (attrs or {}).items()
+        if value is not None and isinstance(name, str) and _ATTR_NAME.fullmatch(name)
+    )
+
 
 # added only for parent nodes
 def extract_tag_attrs(node):
     allowed_attributes = ("id",)
-    attrs = node.get("attrs")
-    return (
-        "".join(
-            f' {attr}="{attrs[attr]}"' for attr in allowed_attributes if attr in attrs
-        )
-        if attrs
-        else ""
-    )
+    attrs = node.get("attrs") or {}
+    return html_attrs({attr: attrs[attr] for attr in allowed_attributes if attr in attrs})
 
 
 # A CSS colour as the editor stores it: `#rrggbb`, `rgb(…)` / `rgba(…)`, a
@@ -57,18 +71,18 @@ def extract_node_style(node):
     background = _css_color(attrs.get("backgroundColor"))
     if background:
         declarations.append(f"background-color: {background}")
-    return f' style="{"; ".join(declarations)}"' if declarations else ""
+    return html_attrs({"style": "; ".join(declarations)}) if declarations else Markup("")
 
 
 def extract_cell_attrs(cell):
     """``colspan`` / ``rowspan`` (when they merge cells) plus the cell's style."""
     attrs = cell.get("attrs") or {}
-    out = ""
+    spans = {}
     for span in ("colspan", "rowspan"):
         value = attrs.get(span)
         if isinstance(value, int) and value > 1:
-            out += f' {span}="{value}"'
-    return out + extract_node_style(cell)
+            spans[span] = value
+    return html_attrs(spans) + extract_node_style(cell)
 
 
 def image_src_url(src):
@@ -94,23 +108,24 @@ def make_img_src(attrs):
     # left/right-aligned logo the same way).
     align = (attrs.get("textAlign") or "").strip()
     fallback_url = image_src_url(attrs.get("src"))
-    img = f'img src="{fallback_url}"'
-    if alt:
-        img += f' alt="{alt}"'
-    if width:
-        img += f' width="{width}"'
-    if height:
-        img += f' height="{height}"'
-    if align:
-        img += f' data-align="{align}"'
-
-    return img
+    return Markup("img") + html_attrs(
+        {
+            "src": fallback_url,
+            "alt": alt or None,
+            "width": width or None,
+            "height": height or None,
+            "data-align": align or None,
+        }
+    )
 
 
 def build_link_handler(config):
     def handle_links(attrs):
         retval = None
         if attrs:
+            # A copy: the target/rel added below must not leak into the
+            # caller's document JSON.
+            attrs = dict(attrs)
             url = attrs.get("href", "").strip()
             link = urlparse(url)
             if not (
@@ -119,7 +134,7 @@ def build_link_handler(config):
             ):
                 attrs["target"] = "_blank"
                 attrs["rel"] = "noopener nofollow"
-            retval = " ".join(f'{k}="{v}"' for k, v in attrs.items() if v is not None)
+            retval = html_attrs(attrs).lstrip()
         return retval
 
     return handle_links
@@ -129,7 +144,7 @@ def get_audio_player_block():
     audio_player_block = pkgutil.get_data(
         __name__, "templates/stack-audio-player.html"
     ).decode()
-    return audio_player_block
+    return Markup(audio_player_block)
 
 
 def get_doc_block(ext, fname, size, src):
@@ -138,6 +153,9 @@ def get_doc_block(ext, fname, size, src):
     ).decode()
     document = Template(document_block)
     html = document.substitute(
-        fileformat=ext[:4], filename=fname, filesize=size, filesrc=src
+        fileformat=escape(ext[:4]),
+        filename=escape(fname),
+        filesize=escape(size),
+        filesrc=escape(src),
     )
-    return html
+    return Markup(html)
