@@ -172,8 +172,9 @@ No content found
                    Box (matrixGridUtils.ts/DynamicTableRenderer.tsx's ".matrix-cell" rule) —
                    the shared .dynamic-table td rule (8px padding, vertical-align: top) is
                    right for an ordinary table but leaves a visible gap around a color fill,
-                   so matrix cells override it inline; nothing else changes for them. #}
-                {% set ns = namespace(text=cell.value) %}
+                   so matrix cells override it inline; nothing else changes for them.
+                   A zero count reads as "-", as in the editor (Frontend format-matrix-count.ts). #}
+                {% set ns = namespace(text=('-' if cell.value is number and cell.value == 0 else cell.value)) %}
                 {% set cell_style = 'font-size: ' + row_font_size + '; padding: 0; text-align: center; vertical-align: middle;' + ((' background-color: ' + cell.color + ';') if cell.color else '') %}
                 {%- else -%}
                 {% set ns = namespace(text=cell) %}
