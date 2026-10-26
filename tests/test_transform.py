@@ -252,3 +252,55 @@ def test_misaligned_continuations_are_ignored():
     assert rendered_html.count(">a1</td>") == 2
     assert "dynamic-table-cell--continuation" not in rendered_html
     assert "dynamic-table-row--group-odd" not in rendered_html
+
+
+def test_risk_analysis_keeps_line_breaks_and_groups():
+    """`kind: "riskAnalysis"` cells hold a record and its fields one per line, and its
+    merged runs render like the traceability matrix's."""
+    data = {
+        "type": "doc",
+        "content": [
+            {
+                "type": "dynamicTable",
+                "attrs": {
+                    "columns": {},
+                    "gridState": {},
+                    "content": {
+                        "kind": "riskAnalysis",
+                        "headers": ["Harm", "Risk", "Risk Control Measure"],
+                        "rows": [
+                            ["H-1\nSeverity: Serious", "R-1\nRisk Acceptance: Accepted", "RCM-1"],
+                            ["H-1\nSeverity: Serious", "R-1\nRisk Acceptance: Accepted", "RCM-2"],
+                            ["H-2", "R-2", "—"],
+                        ],
+                        "continuations": [[False, False, False], [True, True, False], [False, False, False]],
+                        "groupIndexes": [0, 0, 1],
+                    },
+                },
+            }
+        ],
+    }
+    rendered_html = tiptapy.BaseDoc(config).render(data)
+    assert '<table class="dynamic-table dynamic-table--risk-analysis"' in rendered_html
+    rows = rendered_html.split("<tbody>", 1)[1].split("</tr>")[:-1]
+    cell = lambda text: f'<td style="font-size: 12px; white-space: pre-line">{text}</td>'
+    assert cell("H-1\nSeverity: Serious") in rows[0]
+    assert cell("RCM-2") in rows[1]
+    continuation_td = '<td class="dynamic-table-cell--continuation" style="font-size: 12px"></td>'
+    assert [r.count(continuation_td) for r in rows] == [0, 2, 0]
+    assert ["dynamic-table-row--group-odd" in r for r in rows] == [False, False, True]
+
+
+def test_plain_table_keeps_no_kind_class_or_line_breaks():
+    data = {
+        "type": "doc",
+        "content": [
+            {
+                "type": "dynamicTable",
+                "attrs": {"columns": {}, "gridState": {}, "content": {"headers": ["A"], "rows": [["a1"]]}},
+            }
+        ],
+    }
+    rendered_html = tiptapy.BaseDoc(config).render(data)
+    assert '<table class="dynamic-table"' in rendered_html
+    assert "pre-line" not in rendered_html

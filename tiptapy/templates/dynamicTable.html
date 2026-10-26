@@ -39,8 +39,11 @@ else {} -%}
 {%- set continuations = content_continuations if content_continuations and content_continuations|length == rows|length else none -%}
 {%- set content_group_indexes = node.attrs.content.groupIndexes if node.attrs.content and node.attrs.content.groupIndexes is iterable and node.attrs.content.groupIndexes is not string and node.attrs.content.groupIndexes is not mapping else none -%}
 {%- set group_indexes = content_group_indexes if continuations and content_group_indexes and content_group_indexes|length == rows|length else none -%}
-{#- Traceability cells list several records one per line ("\n"-separated by Document). -#}
-{%- set preserve_line_breaks = node.attrs.content and node.attrs.content.kind == 'traceability' -%}
+{#- Computed tables list several values per cell one per line ("\n"-separated by
+   Document): the traceability matrix its records, the risk analysis a record and its fields. -#}
+{%- set content_kind = node.attrs.content.kind if node.attrs.content else none -%}
+{%- set preserve_line_breaks = content_kind in ('traceability', 'riskAnalysis') -%}
+{%- set kind_class = {'traceability': ' dynamic-table--traceability', 'riskAnalysis': ' dynamic-table--risk-analysis'}.get(content_kind, '') -%}
 {%- if rows|length == 0 and not caption -%}
 No content found
 {%- else -%}
@@ -107,7 +110,7 @@ No content found
 {%- endfor -%}
 {%- set col_widths = stretched -%}
 {%- endif -%}
-    <table class="dynamic-table{{ ' dynamic-table--traceability' if preserve_line_breaks else '' }}" style="width: 100%; max-width: 100%; table-layout: fixed;">
+    <table class="dynamic-table{{ kind_class }}" style="width: 100%; max-width: 100%; table-layout: fixed;">
         <colgroup>
             {%- if row_labels -%}
             {%- for _ in range(col_widths|length + 1) -%}
