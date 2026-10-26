@@ -63,6 +63,28 @@ class TestDynamicTableHeaderLeft:
         html = self.doc.render(_doc(_left()))
         assert re.findall(r'<col\s+style="width: ([\d.]+)%">', html) == ["25", "25.0", "25.0", "25.0"]
 
+    def test_more_than_six_records_wrap_into_a_block_repeating_the_header_column(self):
+        rows = [[f"N{i}", f"T{i}", str(i)] for i in range(8)]
+        html = self.doc.render(_doc(_left(), content={"headers": HEADERS, "rows": rows}))
+        soup = BeautifulSoup(html, "html.parser")
+
+        # Columns sized for six records, so the blocks line up and none gets narrower.
+        assert re.findall(r'<col\s+style="width: ([\d.]+)%">', html) == ["25"] + ["12.5"] * 6
+        blocks = [
+            [[cell.get_text(strip=True) for cell in tr.find_all(["th", "td"])] for tr in tbody.find_all("tr")]
+            for tbody in soup.find_all("tbody")
+        ]
+        assert blocks == [
+            [
+                ["Title", "T0", "T1", "T2", "T3", "T4", "T5"],
+                ["Standard number", "N0", "N1", "N2", "N3", "N4", "N5"],
+            ],
+            [
+                ["Title", "T6", "T7", "", "", "", ""],
+                ["Standard number", "N6", "N7", "", "", "", ""],
+            ],
+        ]
+
     def test_font_sizes_apply_to_headers_and_cells(self):
         soup = BeautifulSoup(self.doc.render(_doc(_left())), "html.parser")
         assert {th["style"] for th in soup.select("th")} == {"font-size: 10px"}

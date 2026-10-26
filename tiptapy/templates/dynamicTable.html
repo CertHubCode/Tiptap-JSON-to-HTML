@@ -55,6 +55,10 @@ else {} -%}
 {#- Share of the width the header column takes; the records split the rest equally.
    Same value as the Frontend (TRANSPOSED_HEADER_COLUMN_WIDTH_PERCENT). -#}
 {%- set HEADER_LEFT_COL_PERCENT = 25 -%}
+{#- Most records side by side; more continue in a block below (its own tbody) that repeats
+   the header column, so record columns never get too narrow. Same value as the Frontend
+   (TRANSPOSED_RECORDS_PER_BLOCK). -#}
+{%- set HEADER_LEFT_RECORDS_PER_BLOCK = 6 -%}
 {%- if rows|length == 0 and not caption -%}
 No content found
 {%- else -%}
@@ -122,13 +126,15 @@ No content found
 {%- set col_widths = stretched -%}
 {%- endif -%}
     {%- if header_left -%}
+    {%- set block_columns = [rows|length, HEADER_LEFT_RECORDS_PER_BLOCK]|min %}
     <table class="dynamic-table dynamic-table--header-left" style="width: 100%; max-width: 100%; table-layout: fixed;">
         <colgroup>
             <col style="width: {{ HEADER_LEFT_COL_PERCENT }}%">
-            {%- for _ in rows %}
-            <col style="width: {{ ((100 - HEADER_LEFT_COL_PERCENT) / rows|length)|round(4) }}%">
+            {%- for _ in range(block_columns) %}
+            <col style="width: {{ ((100 - HEADER_LEFT_COL_PERCENT) / block_columns)|round(4) }}%">
             {%- endfor %}
         </colgroup>
+        {%- for block in rows|batch(HEADER_LEFT_RECORDS_PER_BLOCK) %}
         <tbody>
             {%- for header, props in sorted_columns %}
             <tr>
@@ -144,7 +150,7 @@ No content found
                 {%- endset -%}
                 {%- endfor %}
                 <th scope="row" style="font-size: {{ column_font_size }}">{{ ns.text | safe_html }}</th>
-                {%- for row in rows -%}
+                {%- for row in block -%}
                 {%- set ns = namespace(text=row[props.cell_index] if props.cell_index < row|length else '') -%}
                 {%- for mark in node.marks if node.marks -%}
                 {%- set ns.text -%}
@@ -155,9 +161,13 @@ No content found
                 {%- endfor %}
                 <td style="font-size: {{ row_font_size }}">{{ ns.text | safe_html }}</td>
                 {%- endfor %}
+                {%- for _ in range(block_columns - block|length) %}
+                <td style="font-size: {{ row_font_size }}"></td>
+                {%- endfor %}
             </tr>
             {%- endfor %}
         </tbody>
+        {%- endfor %}
     </table>
     {%- else -%}
     <table class="dynamic-table{{ ' dynamic-table--traceability' if preserve_line_breaks else '' }}" style="width: 100%; max-width: 100%; table-layout: fixed;">
