@@ -104,6 +104,12 @@ class TestDynamicTableHeaderLeft:
         html = self.doc.render(_doc(_left(), content=content, columns={}))
         assert "<strong>bold</strong>" in BeautifulSoup(html, "html.parser").find("td").decode_contents()
 
+    def test_no_record_keeps_the_headers_on_top(self):
+        content = {"headers": HEADERS, "rows": [], "caption": "No records"}
+        html = self.doc.render(_doc(_left(), content=content))
+        assert "dynamic-table--header-left" not in html
+        assert _cells(html) == [["Title", "Standard number"]]
+
     def test_caption_is_still_printed(self):
         content = {"headers": HEADERS, "rows": ROWS, "caption": "Filtered view"}
         html = self.doc.render(_doc(_left(), content=content))

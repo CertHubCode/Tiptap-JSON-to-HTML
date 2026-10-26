@@ -51,7 +51,8 @@ else {} -%}
 {%- set header_left_ns.allowed = false -%}
 {%- endfor -%}
 {%- endfor -%}
-{%- set header_left = header_left_ns.allowed -%}
+{#- With no record there is nothing to transpose: the headers stay on top, as in the editor. -#}
+{%- set header_left = header_left_ns.allowed and rows|length > 0 -%}
 {#- Share of the width the header column takes; the records split the rest equally.
    Same value as the Frontend (TRANSPOSED_HEADER_COLUMN_WIDTH_PERCENT). -#}
 {%- set HEADER_LEFT_COL_PERCENT = 25 -%}
