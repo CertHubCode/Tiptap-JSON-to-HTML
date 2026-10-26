@@ -131,7 +131,7 @@ class TestInvalidHTML:
 
         rendered_html = self.doc.render(data)
 
-        assert "<th>Source</th>" in rendered_html, "Visible fallback columns should render"
+        assert ">Source</th>" in rendered_html, "Visible fallback columns should render"
         assert "Vigilance - Trend Reports" in rendered_html, "Visible fallback cell values should render"
         assert "Created At" not in rendered_html, "Hidden fallback headers should not render"
         assert "2026-04-22T13:21:57.087000" not in rendered_html, "Hidden fallback cell values should not render"
@@ -223,9 +223,9 @@ class TestInvalidHTML:
 
         rendered_html = self.doc.render(data)
 
-        assert "<th>Source</th>" in rendered_html, "Unconfigured headers should still render"
-        assert "<th>Collection Method</th>" in rendered_html, "Missing attrs.columns entries should fall back to headers"
-        assert "<th>Description</th>" in rendered_html, "Visible headers should not disappear when attrs.columns is partial"
+        assert ">Source</th>" in rendered_html, "Unconfigured headers should still render"
+        assert ">Collection Method</th>" in rendered_html, "Missing attrs.columns entries should fall back to headers"
+        assert ">Description</th>" in rendered_html, "Visible headers should not disappear when attrs.columns is partial"
         assert "Complaints &amp; customer feedback" in rendered_html, "Visible row data should render"
         assert "Created At" not in rendered_html, "Hidden override columns should remain hidden"
         assert "2026-04-21T09:57:34.003000" not in rendered_html, "Hidden override cell values should not render"
