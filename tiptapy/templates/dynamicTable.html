@@ -39,8 +39,30 @@ else {} -%}
 {%- set continuations = content_continuations if content_continuations and content_continuations|length == rows|length else none -%}
 {%- set content_group_indexes = node.attrs.content.groupIndexes if node.attrs.content and node.attrs.content.groupIndexes is iterable and node.attrs.content.groupIndexes is not string and node.attrs.content.groupIndexes is not mapping else none -%}
 {%- set group_indexes = content_group_indexes if continuations and content_group_indexes and content_group_indexes|length == rows|length else none -%}
-{#- Traceability cells list several records one per line ("\n"-separated by Document). -#}
-{%- set preserve_line_breaks = node.attrs.content and node.attrs.content.kind == 'traceability' -%}
+{#- Computed tables list several values per cell one per line ("\n"-separated by
+   Document): the traceability matrix its records, the risk analysis a record and its fields. -#}
+{%- set content_kind = node.attrs.content.kind if node.attrs.content else none -%}
+{%- set preserve_line_breaks = content_kind in ('traceability', 'riskAnalysis') -%}
+{%- set kind_class = {'traceability': ' dynamic-table--traceability', 'riskAnalysis': ' dynamic-table--risk-analysis'}.get(content_kind, '') -%}
+{#- tableSettings.headerPosition == 'left': the headers form the first column and each record
+   is a column (Frontend TransposedTable.tsx / DynamicTableNode.renderHTML). Locked content
+   -- a matrix (row labels or object cells) or a computed kind -- keeps its fixed layout, as
+   in the editor (isHeaderLeftTable). Absent or 'top' renders the usual table. -#}
+{%- set header_left_ns = namespace(allowed=table_settings.headerPosition == 'left' and not row_labels and content_kind not in ['riskAnalysis', 'traceability']) -%}
+{%- for row in rows if header_left_ns.allowed -%}
+{%- for cell in row if cell is mapping -%}
+{%- set header_left_ns.allowed = false -%}
+{%- endfor -%}
+{%- endfor -%}
+{#- With no record there is nothing to transpose: the headers stay on top, as in the editor. -#}
+{%- set header_left = header_left_ns.allowed and rows|length > 0 -%}
+{#- Share of the width the header column takes; the records split the rest equally.
+   Same value as the Frontend (TRANSPOSED_HEADER_COLUMN_WIDTH_PERCENT). -#}
+{%- set HEADER_LEFT_COL_PERCENT = 25 -%}
+{#- Most records side by side; more continue in a block below (its own tbody) that repeats
+   the header column, so record columns never get too narrow. Same value as the Frontend
+   (TRANSPOSED_RECORDS_PER_BLOCK). -#}
+{%- set HEADER_LEFT_RECORDS_PER_BLOCK = 6 -%}
 {%- if rows|length == 0 and not caption -%}
 No content found
 {%- else -%}
@@ -107,7 +129,52 @@ No content found
 {%- endfor -%}
 {%- set col_widths = stretched -%}
 {%- endif -%}
-    <table class="dynamic-table{{ ' dynamic-table--traceability' if preserve_line_breaks else '' }}" style="width: 100%; max-width: 100%; table-layout: fixed;">
+    {%- if header_left -%}
+    {%- set block_columns = [rows|length, HEADER_LEFT_RECORDS_PER_BLOCK]|min %}
+    <table class="dynamic-table dynamic-table--header-left" style="width: 100%; max-width: 100%; table-layout: fixed;">
+        <colgroup>
+            <col style="width: {{ HEADER_LEFT_COL_PERCENT }}%">
+            {%- for _ in range(block_columns) %}
+            <col style="width: {{ ((100 - HEADER_LEFT_COL_PERCENT) / block_columns)|round(4) }}%">
+            {%- endfor %}
+        </colgroup>
+        {%- for block in rows|batch(HEADER_LEFT_RECORDS_PER_BLOCK) %}
+        <tbody>
+            {%- for header, props in sorted_columns %}
+            <tr>
+                {%- set matched_defs = (column_defs | selectattr('key', 'equalto', header) | list) if column_defs else [] -%}
+                {%- set column_label = matched_defs[0].label if matched_defs and matched_defs[0].label else none -%}
+                {%- set header_text = props.alias if props.alias else (column_label if column_label else props.originalName|default(header)) -%}
+                {%- set ns = namespace(text=header_text | to_traced_display_label) -%}
+                {%- for mark in node.marks if node.marks -%}
+                {%- set ns.text -%}
+                {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
+                {%- include template -%}
+                {%- endwith -%}
+                {%- endset -%}
+                {%- endfor %}
+                <th scope="row" style="font-size: {{ column_font_size }}">{{ ns.text | safe_html }}</th>
+                {%- for row in block -%}
+                {%- set ns = namespace(text=row[props.cell_index] if props.cell_index < row|length else '') -%}
+                {%- for mark in node.marks if node.marks -%}
+                {%- set ns.text -%}
+                {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
+                {%- include template -%}
+                {%- endwith -%}
+                {%- endset -%}
+                {%- endfor %}
+                <td style="font-size: {{ row_font_size }}">{{ ns.text | safe_html }}</td>
+                {%- endfor %}
+                {%- for _ in range(block_columns - block|length) %}
+                <td style="font-size: {{ row_font_size }}"></td>
+                {%- endfor %}
+            </tr>
+            {%- endfor %}
+        </tbody>
+        {%- endfor %}
+    </table>
+    {%- else -%}
+    <table class="dynamic-table{{ kind_class }}" style="width: 100%; max-width: 100%; table-layout: fixed;">
         <colgroup>
             {%- if row_labels -%}
             {%- for _ in range(col_widths|length + 1) -%}
@@ -207,6 +274,7 @@ No content found
             {%- endfor -%}
         </tbody>
     </table>
+    {%- endif %}
     {%- if caption -%}
     <p class="dynamic-table-caption">{{ caption | safe_html }}</p>
     {%- endif -%}
