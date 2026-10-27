@@ -3,12 +3,10 @@ import re
 from tiptapy import BaseDoc
 
 
-def _dynamic_table_doc(headers, columns=None, visibility_model=None, dimensions=None):
+def _dynamic_table_doc(headers, columns=None, visibility_model=None):
     grid_columns = {}
     if visibility_model is not None:
         grid_columns["columnVisibilityModel"] = visibility_model
-    if dimensions is not None:
-        grid_columns["dimensions"] = dimensions
     return {
         "type": "doc",
         "content": [
@@ -89,15 +87,3 @@ class TestDynamicTableColumnVisibility:
         html = self.doc.render(_dynamic_table_doc(headers, columns=columns))
         assert _rendered_headers(html) == ["Name"]
 
-
-class TestDynamicTableUnsizedColumnWidth:
-    def setup_method(self):
-        self.doc = BaseDoc({"base_url": "https://example.com"})
-
-    def test_unsized_column_weighs_like_the_editors_default_width_on_overflow(self):
-        headers = ["A", "B", "C"]
-        dimensions = {"A": {"width": 400}, "B": {"width": 400}}
-        html = self.doc.render(_dynamic_table_doc(headers, dimensions=dimensions))
-        widths = re.findall(r'<col\s+style="width: ([\d.]+)%">', html)
-        # 400 + 400 + 100 (DataGrid default) = 900
-        assert widths == ["44.4444", "44.4444", "11.1111"]

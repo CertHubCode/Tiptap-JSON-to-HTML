@@ -36,7 +36,7 @@ class TestTableColumnWidths:
     def setup_method(self):
         self.doc = BaseDoc({"base_url": "https://example.com"})
 
-    def test_all_columns_defined_and_fits_uses_exact_px_widths(self):
+    def test_all_columns_defined_and_fits_stretches_to_page_width(self):
         data = _table_doc(
             header_cells=[
                 _cell("tableHeader", "A", colwidth=[100]),
@@ -47,8 +47,9 @@ class TestTableColumnWidths:
 
         rendered_html = self.doc.render(data)
 
-        assert '<colgroup><col style="width: 100px"><col style="width: 200px"></colgroup>' in rendered_html
-        assert 'width: 300px' in rendered_html
+        # The 370px spare is shared equally: (100 + 185) / 670 and (200 + 185) / 670.
+        assert '<colgroup><col style="width: 42.5373%"><col style="width: 57.4627%"></colgroup>' in rendered_html
+        assert 'width: 100%' in rendered_html
         assert 'table-layout: fixed' in rendered_html
 
     def test_mixed_defined_and_undefined_columns_keeps_defined_widths(self):
@@ -62,9 +63,41 @@ class TestTableColumnWidths:
 
         rendered_html = self.doc.render(data)
 
+        # The unsized column is a `1fr` track in the editor: the table fills the page and
+        # the unsized column takes what the sized one leaves.
         assert '<colgroup><col><col style="width: 136px"></colgroup>' in rendered_html
-        assert 'width: 100%' in rendered_html
-        assert 'table-layout: fixed' in rendered_html
+        assert 'style="width: 100%; max-width: 100%; table-layout: fixed;"' in rendered_html
+
+    def test_unsized_single_cell_info_box_fills_the_page(self):
+        """An info box is a one-cell table with no `colwidth`. It spans the page in the
+        editor, and was printed 120px wide (detechgene NDA, 19 pages)."""
+        data = {
+            "type": "doc",
+            "content": [
+                {
+                    "type": "table",
+                    "content": [{"type": "tableRow", "content": [_cell("tableHeader", "Why this agreement exists")]}],
+                }
+            ],
+        }
+
+        rendered_html = self.doc.render(data)
+
+        assert (
+            '<table class="basic-table" style="width: 100%; max-width: 100%; table-layout: fixed;">'
+            "<colgroup><col></colgroup>"
+        ) in rendered_html
+
+    def test_scaled_column_is_held_at_the_resize_minimum(self):
+        data = _table_doc(
+            header_cells=[_cell("tableHeader", "A", colwidth=[660]), _cell("tableHeader", "B", colwidth=[35])],
+            body_cells=[_cell("tableCell", "a1"), _cell("tableCell", "b1")],
+        )
+
+        rendered_html = self.doc.render(data)
+
+        # Plain scaling would make B 33.7px; it stays 35 of 670 and A takes the other 635.
+        assert '<colgroup><col style="width: 94.7761%"><col style="width: 5.2239%"></colgroup>' in rendered_html
 
     def test_all_defined_but_overflowing_converts_to_percentages(self):
         data = _table_doc(
@@ -95,7 +128,7 @@ class TestTableColumnWidths:
 
         rendered_html = self.doc.render(data)
 
-        assert '<colgroup><col style="width: 100px"><col style="width: 150px"><col style="width: 80px"></colgroup>' in rendered_html
+        assert '<colgroup><col style="width: 31.8408%"><col style="width: 39.3035%"><col style="width: 28.8557%"></colgroup>' in rendered_html
         assert '<th colspan="2">' in rendered_html
 
     def test_table_with_no_header_row_content_does_not_crash(self):
@@ -108,13 +141,14 @@ class TestTableColumnWidths:
 
         assert "<table" in rendered_html
 
-    def test_outer_table_with_nested_table_cell_skips_width_enforcement(self):
+    def test_outer_table_with_nested_table_fills_the_page_and_frees_the_nested_column(self):
         """A cell that itself contains a nested <table> must not have its outer
-        table's column pinned to a rigid pixel width: the nested content's real
-        size is unpredictable, and forcing table-layout:fixed on the outer table
-        crushes it (e.g. a narrow user-drawn column that later gets a large
-        nested table dropped into it renders as unreadable single-letter-per-line
-        text). See: real production doc "Test nested tables"."""
+        table's column pinned to its pixel width: a narrow user-drawn column that
+        later gets a large nested table dropped into it renders as unreadable
+        single-letter-per-line text (real production doc "Test nested tables").
+        The outer table fills the page with a fixed layout, so nothing nested can
+        push it past the page, and the nested column takes what the others leave.
+        The nested table fills its cell rather than sizing against the page."""
         inner_table = {
             "type": "table",
             "content": [
@@ -156,13 +190,18 @@ class TestTableColumnWidths:
 
         rendered_html = self.doc.render(data)
 
-        outer_table_open = rendered_html.split("<table", 1)[1]
-        assert outer_table_open.startswith(' class="basic-table">'), (
-            "Outer table with a nested-table cell must render without a forced width/table-layout style"
+        outer, inner = rendered_html.split("<table")[1:3]
+        # B (index 1) holds the nested table: no pinned width. A keeps 100 of 670px.
+        assert outer.startswith(
+            ' class="basic-table" style="width: 100%; max-width: 100%; table-layout: fixed;">'
+            '<colgroup><col style="width: 14.9254%"><col></colgroup>'
         )
-        assert rendered_html.count("<colgroup>") == 1, "Only the inner (nested) table should get a colgroup"
+        assert inner.startswith(
+            ' class="basic-table" style="width: 100%; max-width: 100%; table-layout: fixed;">'
+            '<colgroup><col style="width: 50.0%"><col style="width: 50.0%"></colgroup>'
+        )
 
-    def test_outer_table_with_nested_dynamic_table_cell_skips_width_enforcement(self):
+    def test_outer_table_with_nested_dynamic_table_fills_the_page_and_frees_the_nested_column(self):
         nested_dynamic_table = {
             "type": "dynamicTable",
             "attrs": {
@@ -185,10 +224,13 @@ class TestTableColumnWidths:
 
         rendered_html = self.doc.render(data)
 
-        outer_table_open = rendered_html.split("<table", 1)[1]
-        assert outer_table_open.startswith(' class="basic-table">'), (
-            "Outer table with a nested dynamicTable cell must render without a forced width/table-layout style"
+        outer, inner = rendered_html.split("<table")[1:3]
+        assert outer.startswith(
+            ' class="basic-table" style="width: 100%; max-width: 100%; table-layout: fixed;">'
+            '<colgroup><col style="width: 14.9254%"><col></colgroup>'
         )
+        assert inner.startswith(' class="dynamic-table" style="width: 100%;')
+        assert '<col style="width: 100.0%">' in inner
 
     def test_header_cell_missing_attrs_key_does_not_crash(self):
         """A cell dict that omits "attrs" entirely (not attrs: {}) must not

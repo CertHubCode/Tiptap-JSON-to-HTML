@@ -1,7 +1,8 @@
 {%- set MAX_TABLE_WIDTH = 970 if page_orientation == 'landscape' else 670 -%}
-{#- An unsized column renders at the DataGrid's default 100px in the editor, so it
-   weighs the same here when the table overflows and every column becomes a percentage. -#}
-{%- set FLEX_COL_WEIGHT = 100 -%}
+{#- The DataGrid's column defaults in the editor: an unsized column renders at 100px, and
+   none renders (or resizes) narrower than its 50px minWidth. -#}
+{%- set DEFAULT_COL_WIDTH = 100 -%}
+{%- set MIN_COL_WIDTH = 50 -%}
 {#- Column visibility mirrors the editor grid (DynamicTableRenderer.tsx gridInitialState,
    gridStateUtils.ts column hiders, useTableData.ts): Created At (CREATED_AT_COLUMN_FIELD)
    shows only when attrs.columns marks it visible and gridState's columnVisibilityModel
@@ -33,7 +34,46 @@ else {} -%}
    `key` is its `content.headers` identity; `label` is the header text and differs from the
    key only for a duplicate label. Absent for legacy content, where the header IS the label. -#}
 {%- set column_defs = node.attrs.content.columns if node.attrs.content and node.attrs.content.columns else [] -%}
-{%- if rows|length == 0 -%}
+{#- Optional caption under the table (e.g. a traceability matrix with no traced
+   requirements). Generic: any dynamicTable content may carry it. With a caption, an
+   empty table still renders its header row instead of "No content found". -#}
+{%- set caption = node.attrs.content.caption if node.attrs.content and node.attrs.content.caption else none -%}
+{#- Grouped ("fake-merge") rendering, e.g. a traceability matrix whose chains share a
+   parent requirement. `continuations` is aligned with `rows` (one bool list per row,
+   indexed like the row's cells): true = the cell continues the group above, so it
+   renders blank (the string in `rows` keeps the real value for export/copy). One
+   `groupIndexes` entry per row; rows of an odd group get a striped background. Only
+   honoured when aligned with `rows` -- otherwise the table renders exactly as without.
+   Class names are shared with the Frontend editor's renderer. -#}
+{%- set content_continuations = node.attrs.content.continuations if node.attrs.content and node.attrs.content.continuations is iterable and node.attrs.content.continuations is not string and node.attrs.content.continuations is not mapping else none -%}
+{%- set continuations = content_continuations if content_continuations and content_continuations|length == rows|length else none -%}
+{%- set content_group_indexes = node.attrs.content.groupIndexes if node.attrs.content and node.attrs.content.groupIndexes is iterable and node.attrs.content.groupIndexes is not string and node.attrs.content.groupIndexes is not mapping else none -%}
+{%- set group_indexes = content_group_indexes if continuations and content_group_indexes and content_group_indexes|length == rows|length else none -%}
+{#- Computed tables list several values per cell one per line ("\n"-separated by
+   Document): the traceability matrix its records, the risk analysis a record and its fields. -#}
+{%- set content_kind = node.attrs.content.kind if node.attrs.content else none -%}
+{%- set preserve_line_breaks = content_kind in ('traceability', 'riskAnalysis') -%}
+{%- set kind_class = {'traceability': ' dynamic-table--traceability', 'riskAnalysis': ' dynamic-table--risk-analysis'}.get(content_kind, '') -%}
+{#- tableSettings.headerPosition == 'left': the headers form the first column and each record
+   is a column (Frontend TransposedTable.tsx / DynamicTableNode.renderHTML). Locked content
+   -- a matrix (row labels or object cells) or a computed kind -- keeps its fixed layout, as
+   in the editor (isHeaderLeftTable). Absent or 'top' renders the usual table. -#}
+{%- set header_left_ns = namespace(allowed=table_settings.headerPosition == 'left' and not row_labels and content_kind not in ['riskAnalysis', 'traceability']) -%}
+{%- for row in rows if header_left_ns.allowed -%}
+{%- for cell in row if cell is mapping -%}
+{%- set header_left_ns.allowed = false -%}
+{%- endfor -%}
+{%- endfor -%}
+{#- With no record there is nothing to transpose: the headers stay on top, as in the editor. -#}
+{%- set header_left = header_left_ns.allowed and rows|length > 0 -%}
+{#- Share of the width the header column takes; the records split the rest equally.
+   Same value as the Frontend (TRANSPOSED_HEADER_COLUMN_WIDTH_PERCENT). -#}
+{%- set HEADER_LEFT_COL_PERCENT = 25 -%}
+{#- Most records side by side; more continue in a block below (its own tbody) that repeats
+   the header column, so record columns never get too narrow. Same value as the Frontend
+   (TRANSPOSED_RECORDS_PER_BLOCK). -#}
+{%- set HEADER_LEFT_RECORDS_PER_BLOCK = 6 -%}
+{%- if rows|length == 0 and not caption -%}
 No content found
 {%- else -%}
 {%- if node.attrs.content and node.attrs.content.headers -%}
@@ -65,7 +105,8 @@ else (props.visible if props.visible is defined else true) -%}
 "alias": props.alias|default(None),
 "visible": True,
 "order": props.order|default(loop.index0),
-"width": col_w|int if col_w else none
+"width": col_w|int if col_w else none,
+"cell_index": node.attrs.content.headers.index(header)
 })) -%}
 {%- endif -%}
 {%- endif -%}
@@ -81,51 +122,94 @@ else (props.visible if props.visible is defined else true) -%}
 "alias": props.alias|default(None),
 "visible": True,
 "order": props.order|default(visible_columns|length),
-"width": col_w|int if col_w else none
+"width": col_w|int if col_w else none,
+"cell_index": loop.index0
 })) -%}
 {%- endif -%}
 {%- endif -%}
 {%- endfor -%}
 {%- endif -%}
 {%- set sorted_columns = visible_columns|sort(attribute='1.order') -%}
-{%- set width_ns = namespace(total=0, defined_count=0) -%}
+{#- Every column starts as wide as in the editor: its saved width, else DEFAULT_COL_WIDTH,
+   and at least MIN_COL_WIDTH. A table that fits the page fills it, the spare width shared
+   equally between the columns, as the editor grid does (flex-grow: 1 on every column in
+   DynamicTableRenderer.tsx); a wider one, which the editor clips at the page edge, is
+   scaled down to the page width instead, still keeping MIN_COL_WIDTH where it fits
+   (fit_column_widths). Inside a table cell (`in_table_cell`, set by table.html) it fills
+   the cell in the editor's proportions instead — the page width means nothing there. A
+   matrix fills the width, as its cell columns flex in the editor (matrixGridUtils.ts). -#}
+{%- set col_widths = [] -%}
 {%- for header, props in sorted_columns -%}
-{%- if props.width -%}
-{%- set width_ns.total = width_ns.total + props.width -%}
-{%- set width_ns.defined_count = width_ns.defined_count + 1 -%}
-{%- endif -%}
+{%- set _ = col_widths.append([props.width or DEFAULT_COL_WIDTH, MIN_COL_WIDTH]|max) -%}
 {%- endfor -%}
-{%- set has_missing = (sorted_columns|length == 0) or (width_ns.defined_count < sorted_columns|length) -%} {%- set
-    all_defined=(sorted_columns|length> 0) and (width_ns.defined_count == sorted_columns|length) and (width_ns.total >
-    0) -%}
-    {%- set overflows = width_ns.total > MAX_TABLE_WIDTH -%}
-    {%- if has_missing or (all_defined and overflows) or (sorted_columns|length == 0) -%}
-    {%- set table_width_css = 'width: 100%; max-width: 100%; table-layout: fixed;' -%}
+{%- set total_width = col_widths|sum -%}
+{%- set overflows = total_width > MAX_TABLE_WIDTH -%}
+{%- if overflows and not in_table_cell -%}
+{%- set col_widths = col_widths|fit_column_widths(MAX_TABLE_WIDTH, MIN_COL_WIDTH) -%}
+{%- elif not in_table_cell and col_widths -%}
+{%- set spare = (MAX_TABLE_WIDTH - total_width) / col_widths|length -%}
+{%- set stretched = [] -%}
+{%- for width in col_widths -%}
+{%- set _ = stretched.append(width + spare) -%}
+{%- endfor -%}
+{%- set col_widths = stretched -%}
+{%- endif -%}
+    {%- if header_left -%}
+    {%- set block_columns = [rows|length, HEADER_LEFT_RECORDS_PER_BLOCK]|min %}
+    <table class="dynamic-table dynamic-table--header-left" style="width: 100%; max-width: 100%; table-layout: fixed;">
+        <colgroup>
+            <col style="width: {{ HEADER_LEFT_COL_PERCENT }}%">
+            {%- for _ in range(block_columns) %}
+            <col style="width: {{ ((100 - HEADER_LEFT_COL_PERCENT) / block_columns)|round(4) }}%">
+            {%- endfor %}
+        </colgroup>
+        {%- for block in rows|batch(HEADER_LEFT_RECORDS_PER_BLOCK) %}
+        <tbody>
+            {%- for header, props in sorted_columns %}
+            <tr>
+                {%- set matched_defs = (column_defs | selectattr('key', 'equalto', header) | list) if column_defs else [] -%}
+                {%- set column_label = matched_defs[0].label if matched_defs and matched_defs[0].label else none -%}
+                {%- set header_text = props.alias if props.alias else (column_label if column_label else props.originalName|default(header)) -%}
+                {%- set ns = namespace(text=header_text | to_traced_display_label) -%}
+                {%- for mark in node.marks if node.marks -%}
+                {%- set ns.text -%}
+                {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
+                {%- include template -%}
+                {%- endwith -%}
+                {%- endset -%}
+                {%- endfor %}
+                <th scope="row" style="font-size: {{ column_font_size }}">{{ ns.text | safe_html }}</th>
+                {%- for row in block -%}
+                {%- set ns = namespace(text=row[props.cell_index] if props.cell_index < row|length else '') -%}
+                {%- for mark in node.marks if node.marks -%}
+                {%- set ns.text -%}
+                {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
+                {%- include template -%}
+                {%- endwith -%}
+                {%- endset -%}
+                {%- endfor %}
+                <td style="font-size: {{ row_font_size }}">{{ ns.text | safe_html }}</td>
+                {%- endfor %}
+                {%- for _ in range(block_columns - block|length) %}
+                <td style="font-size: {{ row_font_size }}"></td>
+                {%- endfor %}
+            </tr>
+            {%- endfor %}
+        </tbody>
+        {%- endfor %}
+    </table>
     {%- else -%}
-    {%- set table_width_css = 'width: ' ~ width_ns.total ~ 'px; max-width: 100%; table-layout: fixed;' -%}
-    {%- endif -%}
-    {%- set use_percentages = overflows -%}
-    {%- set pct_ns = namespace(total=0) -%}
-    {%- if use_percentages -%}
-    {%- for header, props in sorted_columns -%}
-    {%- set pct_ns.total = pct_ns.total + (props.width if props.width else FLEX_COL_WEIGHT) -%}
-    {%- endfor -%}
-    {%- endif -%}
-    <table class="dynamic-table" style="{{ table_width_css }}">
+    <table class="dynamic-table{{ kind_class }}" style="width: 100%; max-width: 100%; table-layout: fixed;">
         <colgroup>
             {%- if row_labels -%}
+            {%- for _ in range(col_widths|length + 1) -%}
             <col>
-            {%- endif -%}
-            {%- for header, props in sorted_columns -%}
-            {%- if use_percentages and pct_ns.total > 0 -%}
-            <col
-                style="width: {{ ((props.width if props.width else FLEX_COL_WEIGHT) / pct_ns.total * 100)|round(4) }}%">
-            {%- elif props.width -%}
-            <col style="width: {{ props.width }}px">
-            {%- else -%}
-            <col>
-            {%- endif -%}
             {%- endfor -%}
+            {%- else -%}
+            {%- for width in col_widths -%}
+            <col style="width: {{ (width / col_widths|sum * 100)|round(4) }}%">
+            {%- endfor -%}
+            {%- endif -%}
         </colgroup>
         <thead>
             <tr>
@@ -151,13 +235,26 @@ else (props.visible if props.visible is defined else true) -%}
         </thead>
         <tbody>
             {%- for row in rows -%}
+            {%- set row_continuations = continuations[loop.index0] if continuations and continuations[loop.index0] is iterable and continuations[loop.index0] is not string and continuations[loop.index0] is not mapping else [] -%}
+            {%- set group_index = group_indexes[loop.index0] if group_indexes else none -%}
+            {%- if group_index is number and group_index % 2 == 1 -%}
+            <tr class="dynamic-table-row--group-odd">
+            {%- else -%}
             <tr>
+            {%- endif %}
                 {%- if row_labels -%}
                 <th style="font-size: {{ row_font_size }}">{{ (row_labels[loop.index0] if loop.index0 < row_labels|length else '') | safe_html }}</th>
                 {%- endif -%}
                 {%- for header, props in sorted_columns -%}
-                {%- if header in node.attrs.content.headers -%}
-                {% set cell_index = node.attrs.content.headers.index(header) %}
+                {#- Cells are resolved by the column's own position, carried as `cell_index`
+                    when the column was collected above. `headers.index(header)` would return
+                    the FIRST match, so two axis entries sharing a label (severity labels are
+                    user-authored and not unique -- TechDoc keys its axis on record_id, which
+                    MatrixDataTransformer drops) rendered the same cell twice and lost the
+                    other. Frontend keys matrix columns positionally for the same reason --
+                    see matrixGridUtils.ts::matrixColumnField. -#}
+                {%- if props.cell_index is defined and props.cell_index < row|length -%}
+                {% set cell_index = props.cell_index %}
                 {% set cell = row[cell_index] %}
                 {%- if cell is mapping -%}
                 {# A matrix cell ({value, color, riskRecordIds}) — see MatrixDataTransformer
@@ -167,8 +264,9 @@ else (props.visible if props.visible is defined else true) -%}
                    Box (matrixGridUtils.ts/DynamicTableRenderer.tsx's ".matrix-cell" rule) —
                    the shared .dynamic-table td rule (8px padding, vertical-align: top) is
                    right for an ordinary table but leaves a visible gap around a color fill,
-                   so matrix cells override it inline; nothing else changes for them. #}
-                {% set ns = namespace(text=cell.value) %}
+                   so matrix cells override it inline; nothing else changes for them.
+                   A zero count reads as "-", as in the editor (Frontend format-matrix-count.ts). #}
+                {% set ns = namespace(text=('-' if cell.value is number and cell.value == 0 else cell.value)) %}
                 {% set cell_style = 'font-size: ' + row_font_size + '; padding: 0; text-align: center; vertical-align: middle;' + ((' background-color: ' + cell.color + ';') if cell.color else '') %}
                 {%- else -%}
                 {% set ns = namespace(text=cell) %}
@@ -178,6 +276,12 @@ else (props.visible if props.visible is defined else true) -%}
                 {% set ns = namespace(text='') %}
                 {% set cell_style = 'font-size: ' + row_font_size %}
                 {%- endif -%}
+                {#- Continuation flag looked up by the same `cell_index` as the cell itself
+                    (columns may be reordered/hidden), never by the visible loop position. -#}
+                {%- set is_continuation = props.cell_index is defined and props.cell_index < row_continuations|length and row_continuations[props.cell_index] is sameas true -%}
+                {%- if is_continuation -%}
+                {%- set ns.text = '' -%}
+                {%- endif -%}
                 {%- for mark in node.marks if node.marks -%}
                 {%- set ns.text -%}
                 {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%}
@@ -185,10 +289,18 @@ else (props.visible if props.visible is defined else true) -%}
                 {%- endwith -%}
                 {%- endset -%}
                 {%- endfor -%}
-                <td style="{{ cell_style }}">{{ns.text | safe_html }}</td>
+                {%- if is_continuation -%}
+                <td class="dynamic-table-cell--continuation" style="{{ cell_style }}"></td>
+                {%- else -%}
+                <td style="{{ cell_style }}{{ '; white-space: pre-line' if preserve_line_breaks else '' }}">{{ns.text | safe_html }}</td>
+                {%- endif -%}
                 {%- endfor -%}
             </tr>
             {%- endfor -%}
         </tbody>
     </table>
+    {%- endif %}
+    {%- if caption -%}
+    <p class="dynamic-table-caption">{{ caption | safe_html }}</p>
+    {%- endif -%}
     {%- endif -%}

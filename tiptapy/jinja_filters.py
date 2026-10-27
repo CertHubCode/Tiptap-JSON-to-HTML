@@ -61,6 +61,26 @@ def to_traced_display_label_filter(label: str) -> str:
     return _LINKED_TO_TRACED_DISPLAY_LABELS.get(label, label)
 
 
+def fit_column_widths_filter(widths, max_width, min_width):
+    """
+    Scale column `widths` down to sum to `max_width`, none narrower than `min_width`.
+
+    Proportional, except that a column which would drop below `min_width` is held there
+    and the others share what is left. When `min_width` each cannot fit, every column
+    gets an equal share instead.
+    """
+    if min_width * len(widths) >= max_width:
+        return [max_width / len(widths)] * len(widths)
+    held = set()
+    while True:
+        free = [i for i in range(len(widths)) if i not in held]
+        scale = (max_width - min_width * len(held)) / sum(widths[i] for i in free)
+        newly_held = {i for i in free if widths[i] * scale < min_width}
+        if not newly_held:
+            return [min_width if i in held else widths[i] * scale for i in range(len(widths))]
+        held |= newly_held
+
+
 def validate_html_filter(content):
     """Filter to check if content is valid HTML."""
     if not isinstance(content, str):

@@ -1,4 +1,4 @@
-<div class="task-list">
+<div class="task-list"{{ extract_node_style(node) }}>
     {%- for item in node.content -%}
       {%- with template=item.type + '.html', node=item -%}
         {%- include template -%}
