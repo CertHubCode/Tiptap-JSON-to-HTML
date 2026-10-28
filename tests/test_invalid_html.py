@@ -296,7 +296,7 @@ class TestInvalidHTML:
                                 ["<strong>Bold text</strong>"],
                                 ["<em>Italic text</em>"],
                                 ["<a href='https://example.com'>Link</a>"],
-                                ["<img src='data:image/png;base64,AAAA' alt='Image'>"],
+                                ["<img src='data:image/png;base64,iVBORw0KGgo=' alt='Image'>"],
                                 ["<ul><li>Item 1</li><li>Item 2</li></ul>"],
                                 ["<table><tr><td>Cell</td></tr></table>"],
                                 ["<div class='container'>Content</div>"],
@@ -322,7 +322,7 @@ class TestInvalidHTML:
         assert "<strong>Bold text</strong>" in rendered_html, "Strong should be preserved"
         assert "<em>Italic text</em>" in rendered_html, "Em should be preserved"
         assert "<a href='https://example.com'>Link</a>" in rendered_html, "Link should be preserved"
-        assert "<img src='data:image/png;base64,AAAA' alt='Image'>" in rendered_html, "Image should be preserved"
+        assert "<img src='data:image/png;base64,iVBORw0KGgo=' alt='Image'>" in rendered_html, "Image should be preserved"
         assert "<ul><li>Item 1</li><li>Item 2</li></ul>" in rendered_html, "List should be preserved"
         assert "<table><tr><td>Cell</td></tr></table>" in rendered_html, "Table should be preserved"
         assert "<div class='container'>Content</div>" in rendered_html, "Div should be preserved"
@@ -452,14 +452,14 @@ class TestInvalidHTML:
                                 ["<p>Valid</p> <invalid>Invalid</invalid>"],  # Mixed valid/invalid
                                 ["   <p>   Spaced   </p>   "],  # Whitespace handling
                                 ["<a href='test' target='_blank'>Link</a>"],  # Multiple attributes
-                                ["<img src='data:image/png;base64,AAAA' alt='test' width='100' height='100'>"],  # Complex img
+                                ["<img src='data:image/png;base64,iVBORw0KGgo=' alt='test' width='100' height='100'>"],  # Complex img
                                 ["<input type='text' name='username' placeholder='Enter username' required>"],  # Complex input
                                 ["<div class='container' id='main' data-test='value'>Content</div>"],  # Complex div
                                 ["<table><thead><tr><th>Header</th></tr></thead><tbody><tr><td>Cell</td></tr></tbody></table>"],  # Complex table
                                 ["<form action='/submit' method='post' enctype='multipart/form-data'><input type='submit'></form>"],  # Complex form
                                 ["<select name='country'><optgroup label='Europe'><option value='uk'>UK</option></optgroup></select>"],  # Complex select
                                 ["<fieldset><legend>Personal Info</legend><label>Name: <input type='text' name='name'></label></fieldset>"],  # Complex fieldset
-                                ["<figure><img src='data:image/png;base64,AAAA' alt='Image'><figcaption>Caption</figcaption></figure>"],  # Complex figure
+                                ["<figure><img src='data:image/png;base64,iVBORw0KGgo=' alt='Image'><figcaption>Caption</figcaption></figure>"],  # Complex figure
                                 ["<article><header><h1>Title</h1><time>2023-01-01</time></header><section><p>Content</p></section><footer><p>Footer</p></footer></article>"],  # Complex article
                                 ["<A>UPPERCASE</A>"],  # Uppercase tags
                                 ["<a B='C'>Mixed case</a>"]  # Mixed case attributes
@@ -492,14 +492,14 @@ class TestInvalidHTML:
 
         # Test complex structures
         assert "<a href='test' target='_blank'>Link</a>" in rendered_html, "Complex links should be preserved"
-        assert "<img src='data:image/png;base64,AAAA' alt='test' width='100' height='100'>" in rendered_html, "Complex images should be preserved"
+        assert "<img src='data:image/png;base64,iVBORw0KGgo=' alt='test' width='100' height='100'>" in rendered_html, "Complex images should be preserved"
         assert "<input type='text' name='username' placeholder='Enter username' required>" in rendered_html, "Complex inputs should be preserved"
         assert "<div class='container' id='main' data-test='value'>Content</div>" in rendered_html, "Complex divs should be preserved"
         assert "<table><thead><tr><th>Header</th></tr></thead><tbody><tr><td>Cell</td></tr></tbody></table>" in rendered_html, "Complex tables should be preserved"
         assert "<form action='/submit' method='post' enctype='multipart/form-data'><input type='submit'></form>" in rendered_html, "Complex forms should be preserved"
         assert "<select name='country'><optgroup label='Europe'><option value='uk'>UK</option></optgroup></select>" in rendered_html, "Complex selects should be preserved"
         assert "<fieldset><legend>Personal Info</legend><label>Name: <input type='text' name='name'></label></fieldset>" in rendered_html, "Complex fieldsets should be preserved"
-        assert "<figure><img src='data:image/png;base64,AAAA' alt='Image'><figcaption>Caption</figcaption></figure>" in rendered_html, "Complex figures should be preserved"
+        assert "<figure><img src='data:image/png;base64,iVBORw0KGgo=' alt='Image'><figcaption>Caption</figcaption></figure>" in rendered_html, "Complex figures should be preserved"
         assert "<article><header><h1>Title</h1><time>2023-01-01</time></header><section><p>Content</p></section><footer><p>Footer</p></footer></article>" in rendered_html, "Complex articles should be preserved"
 
         print("✅ Basic edge cases handled correctly")

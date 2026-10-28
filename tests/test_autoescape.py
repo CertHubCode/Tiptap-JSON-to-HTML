@@ -3,9 +3,15 @@
 Renderer passes this HTML to WeasyPrint with `| safe`, so anything that escapes
 here becomes real markup in the PDF, e.g. an `<img>` WeasyPrint fetches.
 """
+import base64
+
 import pytest
 
 from tiptapy import BaseDoc
+
+_SVG_FETCHING_FILE = base64.b64encode(
+    b'<svg xmlns="http://www.w3.org/2000/svg"><image href="file:///etc/passwd"/></svg>'
+).decode()
 
 
 class config:
@@ -42,6 +48,11 @@ def test_html_in_text_renders_as_text(payload):
         "<a rel=attachment href=file:///etc/passwd>x</a>",
         '<svg><use href="file:///etc/passwd#x"></use></svg>',
         '<span style="background: url(file:///etc/passwd)">x</span>',
+        # An inline SVG fetches its own `<image href>`, and WeasyPrint parses any
+        # image Pillow can't open as SVG, so the declared type proves nothing.
+        f'<img src="data:image/svg+xml;base64,{_SVG_FETCHING_FILE}">',
+        f'<img src="data:image/png;base64,{_SVG_FETCHING_FILE}">',
+        '<img src="data:image/png,%89PNG">',
     ],
 )
 def test_dynamic_table_cell_html_cannot_make_weasyprint_fetch(payload):
@@ -57,8 +68,9 @@ def test_dynamic_table_cell_html_cannot_make_weasyprint_fetch(payload):
     assert "&lt;" in html
 
 
-def test_dynamic_table_cell_keeps_renderer_inline_images_and_anchors():
-    cell = '<img src="data:image/png;base64,AAAA" alt="f.png"><a href="#embedded-file-1-appendix">f.pdf</a>'
+@pytest.mark.parametrize("image", ["data:image/png;base64,iVBORw0KGgo=", "data:image/jpeg;base64,/9j/4AAQ"])
+def test_dynamic_table_cell_keeps_renderer_inline_images_and_anchors(image):
+    cell = f'<img src="{image}" alt="f.png"><a href="#embedded-file-1-appendix">f.pdf</a>'
     doc = {
         "type": "doc",
         "content": [{"type": "dynamicTable", "attrs": {"content": {"headers": ["c"], "rows": [[cell]]}}}],
