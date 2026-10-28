@@ -1,1 +1,7 @@
-{% set ns = namespace(text=node.text) %} {%- for mark in node.marks -%} {%- set ns.text -%} {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%} {%- include template -%} {%- endwith -%} {%- endset -%} {%- endfor -%} {{ ns.text }}
+{#- ProseMirror serialises marks with the FIRST mark in `node.marks` as the
+    OUTERMOST element (Tiptap orders them by extension priority, so textStyle
+    and link come first). Each loop pass wraps the previous result, so iterate
+    in reverse to reproduce that nesting: e.g. [textStyle, superscript] must give
+    <span style="font-size: 14px"><sup>2</sup></span>, not the other way round,
+    or the span's explicit font-size cancels the superscript's shrink. -#}
+{% set ns = namespace(text=node.text) %} {%- for mark in node.marks | reverse -%} {%- set ns.text -%} {%- with template='marks/' + mark.type + '.html', text=ns.text, mark=mark -%} {%- include template -%} {%- endwith -%} {%- endset -%} {%- endfor -%} {{ ns.text }}

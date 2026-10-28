@@ -74,6 +74,7 @@ tags_to_test = (
     "note_references",
     "ordered_list_type",
     "table_of_contents",
+    "mark_nesting",
 )
 
 class config:

@@ -1,0 +1,39 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Area 10 m" },
+        {
+          "type": "text",
+          "marks": [
+            { "type": "textStyle", "attrs": { "fontSize": "14px" } },
+            { "type": "superscript" }
+          ],
+          "text": "2"
+        },
+        { "type": "text", "text": ", water H" },
+        {
+          "type": "text",
+          "marks": [
+            { "type": "textStyle", "attrs": { "color": "#FF0000", "fontFamily": "Arial" } },
+            { "type": "subscript" }
+          ],
+          "text": "2"
+        },
+        { "type": "text", "text": "O, see " },
+        {
+          "type": "text",
+          "marks": [
+            { "type": "link", "attrs": { "href": "https://python.org/docs" } },
+            { "type": "bold" },
+            { "type": "italic" }
+          ],
+          "text": "the docs"
+        },
+        { "type": "text", "text": "." }
+      ]
+    }
+  ]
+}
