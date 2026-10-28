@@ -1,7 +1,6 @@
 import json
 import os
 import sys
-from html import escape
 from typing import Dict
 from jinja2 import ChainableUndefined, Environment, FileSystemLoader, select_autoescape
 
@@ -10,6 +9,7 @@ from .macros import (
     build_link_handler,
     get_audio_player_block,
     get_doc_block,
+    html_attrs,
     make_img_src,
     extract_cell_attrs,
     extract_node_style,
@@ -29,13 +29,20 @@ renderers: Dict = {}
 
 
 def init_env(path, config):
+    # Every `{{ }}` is HTML-escaped; the node JSON is user-authored and is not
+    # escaped anywhere else. HTML the templates are meant to emit as HTML comes
+    # through as `Markup`: the helpers in macros.py, the `safe_html` and
+    # `markdown` filters, and `{% set %}` / `{% include %}` output.
+    # `("html",)` must stay a tuple: a bare `("html")` is the string "html",
+    # which matches the extensions .h/.t/.m/.l and left escaping off (CU-123z74bznuv).
     env = Environment(
         loader=FileSystemLoader(path),
-        autoescape=select_autoescape(enabled_extensions=("html")),
+        autoescape=select_autoescape(enabled_extensions=("html",)),
         undefined=ChainableUndefined,
     )
     # https://stackoverflow.com/a/6038550
     env.globals["url2mime"] = url2mime
+    env.globals["html_attrs"] = html_attrs
     env.globals["extract_tag_attrs"] = extract_tag_attrs
     env.globals["extract_node_style"] = extract_node_style
     env.globals["extract_cell_attrs"] = extract_cell_attrs
@@ -102,25 +109,6 @@ def collect_toc_entries(node):
     return entries
 
 
-def escape_values_recursive(node):
-    # Skip the html key in the node, as it is used to render the html
-    # and should not be escaped. Users should clean the html before
-    # passing it to the renderer.
-    skip_key = "html"
-    if isinstance(node, dict):
-        return {
-            escape(k): v if k == skip_key else escape_values_recursive(v)
-            for k, v in node.items()
-        }
-    elif isinstance(node, list):
-        return [escape_values_recursive(x) for x in node]
-    elif isinstance(node, str):
-        # Use proper HTML validation instead of simple regex
-        from .html_validator import is_valid_html
-        return node if is_valid_html(node) else escape(node)
-    return node
-
-
 class BaseDoc:
     doc_type = "doc"
     templates_path = (
@@ -140,7 +128,6 @@ class BaseDoc:
     def render(self, in_data, page_orientation="portrait"):
         in_data = in_data if isinstance(in_data, dict) else json.loads(in_data)
         node = in_data if isinstance(in_data, dict) else json.loads(in_data)
-        node = escape_values_recursive(node)
         # Propagated via Jinja's default "include with context" behavior, so
         # nested per-node-type templates (e.g. dynamicTable.html) can size
         # themselves against the page's actual orientation without every

@@ -1,4 +1,6 @@
 from bs4 import BeautifulSoup
+import base64
+import binascii
 import re
 from typing import Tuple, List
 
@@ -58,6 +60,23 @@ class HTMLValidator:
         'javascript:', 'vbscript:', 'data:text/html', 'data:application/x-javascript',
         'data:application/javascript', 'data:application/ecmascript'
     }
+
+    # Attributes WeasyPrint fetches a resource from (as does `href` on any tag but
+    # `<a>`, e.g. svg `<use>`/`<feImage>`). The Renderer's url_fetcher follows
+    # file:// and internal http(s) URLs, so these may only carry an inline PNG/JPEG
+    # or an in-document anchor, which is what the Renderer itself writes into table
+    # cells (CU-123z74bznuv).
+    RESOURCE_ATTRIBUTES = {
+        'src', 'srcset', 'data', 'poster', 'background', 'dynsrc', 'lowsrc', 'xlink:href'
+    }
+    # An inline image is checked by its bytes, not its declared type: WeasyPrint
+    # parses anything Pillow can't open as SVG, whatever the type says, and an SVG
+    # fetches its own `<image href>`. Bytes that start with a PNG/JPEG signature
+    # never parse as XML.
+    INLINE_IMAGE = re.compile(r'data:image/(?:png|jpeg);base64,(.*)', re.IGNORECASE | re.DOTALL)
+    RASTER_SIGNATURES = (b'\x89PNG\r\n\x1a\n', b'\xff\xd8\xff')
+    # `url(` fetches from CSS; a backslash can spell it as a CSS escape.
+    FETCHING_STYLE = re.compile(r'\\|url\s*\(|image(?:-set)?\s*\(', re.IGNORECASE)
 
     def is_valid_html(self, content: str) -> Tuple[bool, str]:
         """
@@ -126,6 +145,8 @@ class HTMLValidator:
                     attr_name_lower = attr_name.lower()
                     if attr_name_lower in self.DANGEROUS_ATTRIBUTES:
                         return False
+                    if not self._is_safe_resource_attribute(tag, attr_name_lower, attr_value):
+                        return False
 
                     # Check attribute values for dangerous protocols
                     if isinstance(attr_value, str):
@@ -141,6 +162,31 @@ class HTMLValidator:
                                     if protocol in value_lower:
                                         return False
         return True
+
+    def _is_safe_resource_attribute(self, tag, attr_name: str, attr_value) -> bool:
+        """False for an attribute that would make WeasyPrint load an external resource."""
+        values = attr_value if isinstance(attr_value, list) else [attr_value]
+        # Not lowercased: base64 is case-sensitive.
+        values = [v.strip() for v in values if isinstance(v, str)]
+        # `<a rel=attachment href=...>` embeds whatever `href` points at in the PDF.
+        if attr_name == 'rel':
+            return not any('attachment' in v.lower() for v in values)
+        if attr_name == 'style':
+            return not any(self.FETCHING_STYLE.search(v) for v in values)
+        if attr_name in self.RESOURCE_ATTRIBUTES or (attr_name == 'href' and tag.name.lower() != 'a'):
+            return all(v.startswith('#') or self._is_inline_raster_image(v) for v in values)
+        return True
+
+    def _is_inline_raster_image(self, value: str) -> bool:
+        """True for a base64 `data:` URL whose bytes are a PNG or JPEG."""
+        match = self.INLINE_IMAGE.fullmatch(value)
+        if not match:
+            return False
+        try:
+            data = base64.b64decode(match.group(1), validate=True)
+        except binascii.Error:
+            return False
+        return data.startswith(self.RASTER_SIGNATURES)
 
 
 # Global instance
