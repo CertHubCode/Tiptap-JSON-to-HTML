@@ -42,7 +42,7 @@ class TestDynamicTableColumnVisibility:
     def test_visibility_model_can_reveal_a_linked_column(self):
         headers = ["Name", "Linked Files"]
         html = self.doc.render(_dynamic_table_doc(headers, visibility_model={"Linked Files": True}))
-        assert _rendered_headers(html) == ["Name", "Traced Files"]
+        assert _rendered_headers(html) == ["Name", "Linked Files"]
 
     def test_visibility_model_wins_over_columns_visible(self):
         headers = ["Name", "Status"]
