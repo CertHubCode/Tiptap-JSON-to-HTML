@@ -1,13 +1,15 @@
 # .github/workflows/claude-code-review.yml
 name: Claude – PR Review
 
+# Started by hand: Actions → Claude – PR Review → Run workflow, then enter the
+# pull request number. PR comments do not start it.
 on:
-  issue_comment:
-    types: [created]
-  pull_request_review_comment:
-    types: [created]
-  pull_request_review:
-    types: [submitted]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to review
+        required: true
+        type: string
 
 jobs:
   claude-review:
@@ -19,4 +21,6 @@ jobs:
       id-token: write
       actions: read
     uses: CertHubCode/.github/.github/workflows/claude-code-review.yml@main
+    with:
+      pr_number: ${{ inputs.pr_number }}
     secrets: inherit
