@@ -1,6 +1,7 @@
 {%- set MAX_TABLE_WIDTH = 970 if page_orientation == 'landscape' else 670 -%}
-{#- The DataGrid's column defaults in the editor: an unsized column renders at 100px, and
-   none renders (or resizes) narrower than its 50px minWidth. -#}
+{#- In the editor no column renders (or resizes) narrower than 50px, the minWidth an unsized
+   column shares the free width down to (UNSIZED_COLUMN_MIN_WIDTH). DEFAULT_COL_WIDTH only
+   weighs an unsized column against the others inside a table cell. -#}
 {%- set DEFAULT_COL_WIDTH = 100 -%}
 {%- set MIN_COL_WIDTH = 50 -%}
 {#- Column visibility mirrors the editor grid (DynamicTableRenderer.tsx gridInitialState,
@@ -130,30 +131,36 @@ else (props.visible if props.visible is defined else true) -%}
 {%- endfor -%}
 {%- endif -%}
 {%- set sorted_columns = visible_columns|sort(attribute='1.order') -%}
-{#- Every column starts as wide as in the editor: its saved width, else DEFAULT_COL_WIDTH,
+{#- Every column starts as wide as in the editor: its saved width, else MIN_COL_WIDTH,
    and at least MIN_COL_WIDTH. A table that fits the page fills it, the spare width shared
-   equally between the columns, as the editor grid does (flex-grow: 1 on every column in
-   DynamicTableRenderer.tsx); a wider one, which the editor clips at the page edge, is
-   scaled down to the page width instead, still keeping MIN_COL_WIDTH where it fits
+   equally between the columns without a saved width, as the editor grid does (they are
+   `flex: 1` in columnUtils.ts, resized ones keep their px width); when every column has a
+   saved width it stays that narrow, as the editor grid shrink-wraps it. A wider one, which
+   the editor clips at the page edge, is scaled down to the page width instead, still keeping MIN_COL_WIDTH where it fits
    (fit_column_widths). Inside a table cell (`in_table_cell`, set by table.html) it fills
    the cell in the editor's proportions instead — the page width means nothing there. A
    matrix fills the width, as its cell columns flex in the editor (matrixGridUtils.ts). -#}
 {%- set col_widths = [] -%}
+{%- set unsized = [] -%}
+{%- set unsized_start = DEFAULT_COL_WIDTH if in_table_cell else MIN_COL_WIDTH -%}
 {%- for header, props in sorted_columns -%}
-{%- set _ = col_widths.append([props.width or DEFAULT_COL_WIDTH, MIN_COL_WIDTH]|max) -%}
+{%- set _ = col_widths.append([props.width or unsized_start, MIN_COL_WIDTH]|max) -%}
+{%- if not props.width -%}{%- set _ = unsized.append(loop.index0) -%}{%- endif -%}
 {%- endfor -%}
 {%- set total_width = col_widths|sum -%}
 {%- set overflows = total_width > MAX_TABLE_WIDTH -%}
 {%- if overflows and not in_table_cell -%}
 {%- set col_widths = col_widths|fit_column_widths(MAX_TABLE_WIDTH, MIN_COL_WIDTH) -%}
-{%- elif not in_table_cell and col_widths -%}
-{%- set spare = (MAX_TABLE_WIDTH - total_width) / col_widths|length -%}
+{%- elif not in_table_cell and unsized -%}
+{%- set spare = (MAX_TABLE_WIDTH - total_width) / unsized|length -%}
 {%- set stretched = [] -%}
 {%- for width in col_widths -%}
-{%- set _ = stretched.append(width + spare) -%}
+{%- set _ = stretched.append(width + spare if loop.index0 in unsized else width) -%}
 {%- endfor -%}
 {%- set col_widths = stretched -%}
 {%- endif -%}
+{%- set shrink_wrapped = col_widths and not unsized and not overflows and not in_table_cell and not row_labels -%}
+{%- set table_width = (col_widths|sum|round(4)|string ~ 'px') if shrink_wrapped else '100%' -%}
     {%- if header_left -%}
     {%- set block_columns = [rows|length, HEADER_LEFT_RECORDS_PER_BLOCK]|min %}
     <table class="dynamic-table dynamic-table--header-left" style="width: 100%; max-width: 100%; table-layout: fixed;">
@@ -199,7 +206,7 @@ else (props.visible if props.visible is defined else true) -%}
         {%- endfor %}
     </table>
     {%- else -%}
-    <table class="dynamic-table{{ kind_class }}" style="width: 100%; max-width: 100%; table-layout: fixed;">
+    <table class="dynamic-table{{ kind_class }}" style="width: {{ table_width }}; max-width: 100%; table-layout: fixed;">
         <colgroup>
             {%- if row_labels -%}
             {%- for _ in range(col_widths|length + 1) -%}
