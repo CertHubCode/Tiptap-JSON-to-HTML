@@ -118,6 +118,18 @@ def test_marks_wrap_the_reference_so_its_size_mark_survives():
     assert '<span style="font-size: 18px"><span class="dynamic-text-content">Purpose</span></span>' in html
 
 
+def test_a_linked_reference_drops_the_links_inside_it():
+    """A link inside a link: the HTML parser closes the outer one and moves the content out of
+    the reference, so Renderer's reference styles miss it. The inner link keeps its text."""
+    content = '<p><a href="https://certhub.de/plan">See the plan</a> now</p>'
+    node = {"type": "dynamic-text-content", "attrs": {"type": "rich", "content": content},
+            "marks": [{"type": "link", "attrs": {"href": "https://certhub.de/sop"}}]}
+    html = BaseDoc(config).render({"type": "doc", "content": [{"type": "paragraph", "content": [node]}]})
+    assert html.count("<a ") == 1
+    assert '<span class="dynamic-text-content"><p>See the plan now</p></span>' in html
+    assert '<a href="https://certhub.de/plan">See the plan</a>' in BaseDoc(config).render(_reference(content))
+
+
 @pytest.mark.parametrize(
     "payload",
     [
