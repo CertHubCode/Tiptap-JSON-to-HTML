@@ -91,6 +91,16 @@ def test_rich_reference_prints_its_source_html_as_formatting():
     assert "&lt;" not in html
 
 
+def test_paragraph_holding_a_rich_reference_is_not_a_p():
+    """An HTML parser closes a <p> at the reference's first <h2> or <p>, which moves the
+    reference content out of its span, so the PDF's reference styles miss it."""
+    html = BaseDoc(config).render(_reference("<h2>Purpose</h2>"))
+    assert html.startswith("<div>") and html.endswith("</div>")
+    plain = {"type": "dynamic-text-content", "attrs": {"type": "plain", "content": "Purpose"}}
+    html = BaseDoc(config).render({"type": "doc", "content": [{"type": "paragraph", "content": [plain]}]})
+    assert html.startswith("<p>")
+
+
 @pytest.mark.parametrize(
     "payload",
     ['<img src="file:///etc/passwd">', "<script>alert(1)</script>", "<a rel=attachment href=file:///etc/passwd>x</a>"],
