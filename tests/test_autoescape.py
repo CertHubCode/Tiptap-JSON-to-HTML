@@ -78,6 +78,29 @@ def test_dynamic_table_cell_keeps_renderer_inline_images_and_anchors(image):
     assert cell in BaseDoc(config).render(doc)
 
 
+def _reference(content):
+    node = {"type": "dynamic-text-content", "attrs": {"type": "rich", "content": content, "entity_type": "SOP"}}
+    return {"type": "doc", "content": [{"type": "paragraph", "content": [node]}]}
+
+
+def test_rich_reference_prints_its_source_html_as_formatting():
+    """A reference carries its source's stored HTML (CU-123z74ccj33): the PDF printed it as text."""
+    content = '<h2>Purpose</h2><p><span style="font-size: 14px">Instruments are disinfected.</span></p>'
+    html = BaseDoc(config).render(_reference(content))
+    assert content in html
+    assert "&lt;" not in html
+
+
+@pytest.mark.parametrize(
+    "payload",
+    ['<img src="file:///etc/passwd">', "<script>alert(1)</script>", "<a rel=attachment href=file:///etc/passwd>x</a>"],
+)
+def test_rich_reference_html_cannot_make_weasyprint_fetch(payload):
+    html = BaseDoc(config).render(_reference(payload))
+    assert payload not in html
+    assert "&lt;" in html
+
+
 def test_link_attrs_cannot_break_out_of_the_tag():
     mark = {"type": "link", "attrs": {"href": 'x" onmouseover="y', "a b=c": "d"}}
     html = BaseDoc(config).render(_paragraph("t", [mark]))
