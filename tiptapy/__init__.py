@@ -18,6 +18,7 @@ from .macros import (
 from .jinja_filters import (
     fit_column_widths_filter,
     markdown_filter,
+    rich_reference_filter,
     safe_html_filter,
     to_traced_display_label_filter,
     validate_html_filter,
@@ -54,6 +55,7 @@ def init_env(path, config):
     # Register custom filters
     env.filters["validate_html"] = validate_html_filter
     env.filters["safe_html"] = safe_html_filter
+    env.filters["rich_reference"] = rich_reference_filter
     env.filters["to_traced_display_label"] = to_traced_display_label_filter
     env.filters["markdown"] = markdown_filter
     env.filters["fit_column_widths"] = fit_column_widths_filter

@@ -1,7 +1,11 @@
 {#- `extract_node_style` prints the toolbar alignment (`textAlign`) and the
     block background (`backgroundColor`, NodeBackground) the editor keeps as
-    node attrs. -#}
-<p{{ extract_tag_attrs(node) }}{{ extract_node_style(node) }}>
+    node attrs.
+    A rich reference holds its source's HTML (<h2>, <p>). An HTML parser closes a
+    <p> at the first of those and moves them out of the reference, so such a
+    paragraph is a <div>, which lays out the same in the PDF. -#}
+{%- set tag = 'div' if node.content and node.content | selectattr('type', 'equalto', 'dynamic-text-content') | selectattr('attrs.type', 'equalto', 'rich') | list else 'p' -%}
+<{{ tag }}{{ extract_tag_attrs(node) }}{{ extract_node_style(node) }}>
     {%- if node.content -%}
     {%- for item in node.content -%}
     {%- with template=item.type + '.html', node=item -%}
@@ -11,4 +15,4 @@
     {%- else -%}
     <br>
     {%- endif -%}
-    </p>
+    </{{ tag }}>
