@@ -1,7 +1,7 @@
 {#- A rich reference holds its source's stored HTML: it prints as formatting, minus the
     unsafe parts. The class span sits inside the marks, as the node view does in the
     editor, so Renderer's reference styles never override a mark set on the reference. -#}
-{%- set ns = namespace(content=(node.attrs.content | rich_reference) if node.attrs.type == 'rich' else node.attrs.content) -%}
+{%- set ns = namespace(content=(node.attrs.content | rich_reference(strip_links=(node.marks or []) | selectattr('type', 'equalto', 'link') | list | length > 0)) if node.attrs.type == 'rich' else node.attrs.content) -%}
 {%- set ns.content -%}<span class="dynamic-text-content">{{ ns.content }}</span>{%- endset -%}
 {%- for mark in node.marks if node.marks -%}
 {%- set ns.content -%}

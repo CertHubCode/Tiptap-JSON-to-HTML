@@ -136,18 +136,21 @@ _REFERENCE_STYLE_PROPERTIES = {
 }
 
 
-def rich_reference_filter(content):
+def rich_reference_filter(content, strip_links=False):
     """Print a rich reference's stored HTML (an SOP description, ...) as formatting.
 
     Unlike `safe_html`, which escapes the whole value when one part fails, this keeps
     the formatting and images and removes only the unsafe parts. nh3 parses like a
     browser, so a tag hidden from another parser (`<!-->`, `<![CDATA[>`) is still seen.
+    `strip_links` keeps only the text of links, for a reference that is a link itself:
+    a parser closes the outer link at the inner one and moves the content out.
     """
     if not isinstance(content, str):
         return content
     return Markup(
         nh3.clean(
             content,
+            tags=nh3.ALLOWED_TAGS - {"a"} if strip_links else nh3.ALLOWED_TAGS,
             attributes=_REFERENCE_ATTRIBUTES,
             filter_style_properties=_REFERENCE_STYLE_PROPERTIES,
             url_schemes={"https", "mailto"},
