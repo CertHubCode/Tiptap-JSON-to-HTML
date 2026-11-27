@@ -101,14 +101,42 @@ def test_paragraph_holding_a_rich_reference_is_not_a_p():
     assert html.startswith("<p>")
 
 
+def test_rich_reference_keeps_its_images():
+    """One image used to fail the whole-content check, so the reference printed as raw tags."""
+    content = '<h2>Purpose</h2><p>Flow: <img src="https://assets.certhub.de/flow.png" alt="flow"></p>'
+    html = BaseDoc(config).render(_reference(content))
+    assert "<h2>Purpose</h2>" in html
+    assert 'src="https://assets.certhub.de/flow.png"' in html
+
+
+def test_marks_wrap_the_reference_so_its_size_mark_survives():
+    """Renderer makes everything inside the reference inherit the sentence's size; a size mark
+    set on the reference itself sits outside it, as in the editor."""
+    node = {"type": "dynamic-text-content", "attrs": {"type": "plain", "content": "Purpose"},
+            "marks": [{"type": "textStyle", "attrs": {"fontSize": "18px"}}]}
+    html = BaseDoc(config).render({"type": "doc", "content": [{"type": "paragraph", "content": [node]}]})
+    assert '<span style="font-size: 18px"><span class="dynamic-text-content">Purpose</span></span>' in html
+
+
 @pytest.mark.parametrize(
     "payload",
-    ['<img src="file:///etc/passwd">', "<script>alert(1)</script>", "<a rel=attachment href=file:///etc/passwd>x</a>"],
+    [
+        '<img src="file:///etc/passwd">',
+        "<img src=http://169.254.169.254/latest/meta-data/>",
+        f'<img src="data:image/svg+xml;base64,{_SVG_FETCHING_FILE}">',
+        "<script>alert(1)</script>",
+        "<a rel=attachment href=file:///etc/passwd>x</a>",
+        '<span style="background: url(file:///etc/passwd)">x</span>',
+        # Hide a tag from a different HTML parser than WeasyPrint's.
+        '<p>x<!--><a rel="attachment" href="file:///etc/passwd">y</a>--></p>',
+        '<p>x<![CDATA[><a rel="attachment" href="file:///etc/passwd">y</a>]]></p>',
+    ],
 )
 def test_rich_reference_html_cannot_make_weasyprint_fetch(payload):
+    """Unsafe parts are removed, the rest prints (CU-123z74bznuv)."""
     html = BaseDoc(config).render(_reference(payload))
-    assert payload not in html
-    assert "&lt;" in html
+    for unsafe in ("file:", "169.254", "data:image/svg", "<script", "alert(1)"):
+        assert unsafe not in html
 
 
 def test_link_attrs_cannot_break_out_of_the_tag():
