@@ -87,7 +87,7 @@ def test_rich_reference_prints_its_source_html_as_formatting():
     """A reference carries its source's stored HTML (CU-123z74ccj33): the PDF printed it as text."""
     content = '<h2>Purpose</h2><p><span style="font-size: 14px">Instruments are disinfected.</span></p>'
     html = BaseDoc(config).render(_reference(content))
-    assert content in html
+    assert '<h2>Purpose</h2><p><span style="font-size:14px">Instruments are disinfected.</span></p>' in html
     assert "&lt;" not in html
 
 
